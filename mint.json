@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Autocalls",
+  "name": "EARS AI",
   "logo": {
     "dark": "/resources/logo/dark.png",
     "light": "/resources/logo/light.png"
@@ -24,14 +24,14 @@
   },
   "topbarLinks": [{
     "name": "Home",
-    "url": "https://autocalls.ai"
+    "url": "https://juvodaytoday.com/"
   }, {
     "name": "Support",
-    "url": "https://autocalls.ai/contact"
+    "url": "https://ears-help.juvotec.com/"
   }],
   "topbarCtaButton": {
     "name": "Dashboard",
-    "url": "https://app.autocalls.ai"
+    "url": "https://ai.earsconnect.com"
   },
   "anchors": [{
     "name": "No-Code Automation",
@@ -397,10 +397,9 @@
     }
   ],
   "footerSocials": {
-    "linkedin": "https://www.linkedin.com/company/autocalls-ai"
   },
   "api": {
-    "baseUrl": "https://app.autocalls.ai/api/",
+    "baseUrl": "https://ai.earsconnect.com/api/",
     "auth": {
       "method": "bearer"
     }
