@@ -7,12 +7,12 @@
   },
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#06df4b",
-    "light": "#06df4b",
-    "dark": "#65fe50",
+    "primary": "#8AC146",
+    "light": "#8AC146",
+    "dark": "#8AC146",
     "anchors": {
-      "from": "#01df4a",
-      "to": "#65fe50"
+      "from": "#8AC146",
+      "to": "#8AC146"
     }
   },
   "topAnchor": {
@@ -36,17 +36,17 @@
   "anchors": [{
     "name": "No-Code Automation",
     "icon": "wand-magic-sparkles",
-    "color": "#6c63ff",
+    "color": "#8AC146",
     "url": "automation-platform"
   }, {
     "name": "API Reference",
     "icon": "code",
-    "color": "#1c51fc",
+    "color": "#868d93",
     "url": "api-reference"
   }, {
     "name": "Platform updates",
     "icon": "scroll",
-    "color": "#ffbb00",
+    "color": "#000000",
     "url": "releases"
   }],
   "navigation": [{
