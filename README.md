@@ -103,9 +103,9 @@ To preview documentation changes locally:
 
 If you see an error like `refusing to allow a GitHub App to create or update workflow`, you need to manually update your workflow files:
 
-**Step 1:** Go to the template repository workflow files:
-- [sync-updates.yml](https://github.com/Autocalls/documentation/blob/main/.github/workflows/sync-updates.yml)
-- [rebrand.yml](https://github.com/Autocalls/documentation/blob/main/.github/workflows/rebrand.yml)
+**Step 1:** This repository is a fork of the upstream template at [`Autocalls/documentation`](https://github.com/Autocalls/documentation) (our work lives in `juvodaytoday/ears-ai-docs`). Open the latest workflow files from the upstream template:
+- [sync-updates.yml](https://github.com/Autocalls/documentation/blob/main/.github/workflows/sync-updates.yml) (upstream)
+- [rebrand.yml](https://github.com/Autocalls/documentation/blob/main/.github/workflows/rebrand.yml) (upstream)
 
 **Step 2:** For each file:
 1. Click the **"Raw"** button

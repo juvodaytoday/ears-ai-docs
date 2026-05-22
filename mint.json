@@ -52,7 +52,7 @@
   "navigation": [{
       "group": "Introduction",
       "pages": [
-        "introduction/what-is-autocalls",
+        "introduction/what-is-platform",
         "introduction/how-it-works",
         "introduction/key-terminology"
       ]
@@ -384,7 +384,7 @@
     {
       "group": "Calls Related",
       "pages": [
-        "automation-platform/calls-related/autocalls-tool",
+        "automation-platform/calls-related/platform-tool",
         "automation-platform/calls-related/common-integrations",
         "automation-platform/calls-related/sms-capabilities"
       ]
