@@ -6,6 +6,11 @@
     "light": "/resources/logo/light.png"
   },
   "favicon": "/favicon.png",
+  "seo": {
+    "metatags": {
+      "og:image": "https://ai.earsconnect.com/resources/logo/ears-og-image.png"
+    }
+  },
   "colors": {
     "primary": "#8AC146",
     "light": "#8AC146",
