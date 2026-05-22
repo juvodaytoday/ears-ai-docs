@@ -42,12 +42,12 @@
     "name": "No-Code Automation",
     "icon": "wand-magic-sparkles",
     "color": "#8AC146",
-    "url": "automation-platform"
+    "url": "automation-platform/introduction"
   }, {
     "name": "API Reference",
     "icon": "code",
     "color": "#868d93",
-    "url": "api-reference"
+    "url": "api-reference/introduction"
   }, {
     "name": "Platform updates",
     "icon": "scroll",
