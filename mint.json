@@ -8,7 +8,7 @@
   "favicon": "/favicon.png",
   "seo": {
     "metatags": {
-      "og:image": "/resources/logo/ears-og-image.png"
+      "og:image": "https://ai.earsconnect.com/resources/logo/ears-og-image.png"
     }
   },
   "colors": {
