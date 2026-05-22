@@ -72,6 +72,7 @@
           "group": "Creating and Editing an AI Assistant",
           "icon": "robot",
           "pages": [
+            "ai-assistants/creating-and-editing",
             "ai-assistants/settings/general",
             "ai-assistants/settings/prompt-and-tools",
             "ai-assistants/settings/post-call-actions"
@@ -191,7 +192,9 @@
       "pages": [
         "pricing/overview",
         "pricing/usage-based",
-        "pricing/number-rentals"
+        "pricing/number-rentals",
+        "pricing/extra-fees",
+        "pricing/inbound-vs-outbound"
       ]
     },
     {
@@ -199,6 +202,7 @@
       "pages": [
         "provisioning/supported-countries",
         "provisioning/managing-numbers",
+        "provisioning/compliance",
         {
           "group": "SIP trunking",
           "icon": "phone-volume",
@@ -222,12 +226,14 @@
       "pages": [
         "troubleshooting/ai-behavior",
         "troubleshooting/billing",
+        "troubleshooting/byop",
         "troubleshooting/cal-com",
         "troubleshooting/calendly",
         "troubleshooting/call-quality",
         "troubleshooting/campaigns",
         "troubleshooting/gohighlevel",
         "troubleshooting/leads",
+        "troubleshooting/setup-issues",
         "troubleshooting/sip-integration",
         "troubleshooting/voice-problems",
         "troubleshooting/web-widget",
