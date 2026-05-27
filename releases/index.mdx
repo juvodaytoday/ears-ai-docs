@@ -8,6 +8,182 @@ icon: "scroll"
 **Stay up to date** — Follow our latest product updates and improvements. We ship new features regularly to enhance your AI calling experience.
 </Note>
 
+<Update label="v1.7.9" description="May 22 2026">
+
+### 👥 WhatsApp Coexistence, Smart Message Buffering, Engine upgrades
+
+### 💬 WhatsApp Coexistence: Keep Using the WhatsApp Business App
+
+You can now connect a WhatsApp sender in **Coexistence mode**, which lets your team keep using the official WhatsApp Business app on their phones at the same time as the AI assistant. No need to migrate your existing chats, contacts, or labels: everything stays where it is, and the AI handles new conversations in parallel.
+
+This is a game-changer for businesses that already have an active WhatsApp Business setup and don't want to disrupt how their team works today.
+
+### ⏱ Smart Message Buffering for WhatsApp
+
+Real customers don't send one perfectly composed message: they send three quick texts, an image, then a follow-up question. Until now, the AI would reply to each one separately, creating a clumsy back-and-forth. With the new **response delay** setting, the AI now waits a configurable number of seconds (0 to 300) before replying, giving customers time to finish their thought.
+
+- **Configurable per assistant** — Set the response delay individually on each assistant in the assistant form. Leave it at zero for the original instant-reply behavior
+
+### 📞 New Outbound Call Limits Page
+
+To stay aligned with carrier compliance regulations on shared infrastructure numbers, the new **Limits page** (now in the user menu, next to "My profile") shows your current daily outbound call allowance, your usage so far today, and your trust tier at a glance.
+
+- **Inbound and SIP trunk calls are unlimited** — The limits only apply to outbound calls placed through shared platform numbers; bring-your-own carrier accounts are not affected
+- **Request a higher limit** — A request workflow is available directly from the page; verified businesses can be upgraded to higher tiers
+- **Bring your own carrier for unlimited outbound** — A prominent banner links to the BYO Telephony wizard for teams that want full control over their outbound volume
+- **Smart campaign handling** — Campaigns that hit the limit aren't paused or broken; they automatically resume the next day where they left off
+
+### 🚀 Voice Engine Upgrade: Across-the-Board Quality & Stability
+
+The underlying voice engine has been upgraded. Customers should notice smoother calls, fewer mid-call hiccups, and faster response times across every voice mode.
+
+### 🛠 Other Improvements & Fixes
+
+- **Delete campaigns via API** — A new DELETE /campaign/{id} endpoint lets you remove campaigns programmatically; running campaigns are stopped automatically before deletion
+- **Assistant transfer over API** — The *assistant_transfer* tool now persists correctly when configured via the assistant API, and self-transfers (an assistant trying to transfer to itself) are blocked
+- **Mid-call tool test button** — Fixed the test button on mid-call tool configuration so it sends the correct HTTP method (GET, POST, etc.) instead of always defaulting
+
+</Update>
+
+<Update label="v1.7.8" description="May 10 2026">
+
+### 🎙 OpenAI Realtime 2, GPT 5.5, Cartesia 3.5, Bring Your Own Telephony 1-click integration and more
+
+### 🧠 GPT Realtime 2: Better Prompt Following
+
+Our **speech-to-speech and Dualplex mode** now includes OpenAI's **GPT Realtime 2**. The biggest win: the assistant follows your prompt much more reliably, staying on script, respecting your instructions, and handling complex multi-step conversations without drifting.
+
+Combined with our proprietary **Dualplex™** technology, this delivers the best voice quality, lowest latency, and most reliable instruction-following available on any AI calling platform today.
+
+### 🎙 Cartesia Sonic 3.5: Voice Engine Upgrade
+
+The **Cartesia** voice engine has been upgraded to **Sonic 3.5**, the latest version. Expect noticeably more natural-sounding voices, better stability across long calls, and improved consistency on tricky words and names.
+
+The upgrade applies automatically to every assistant using Cartesia voices: no configuration changes needed.
+
+### ⚡️ GPT-5.5: New Language Model in Pipeline Mode
+
+You can now select **GPT-5.5** as the language model for your assistants in pipeline mode. It's a great all-rounder: fast responses, strong reasoning, and excellent prompt-following, ideal for assistants that need both speed and intelligence without the cost of the flagship models.
+
+Available right now in your assistant's pipeline mode configuration.
+
+### 📞 Bring Your Own Telephony: Self-Service Carrier Imports
+
+You can now connect your own carrier accounts directly through a guided import wizard: no support ticket, no manual SIP setup. Teams that already have negotiated rates with their preferred provider can plug those accounts in and start dialing in minutes.
+
+- **Twilio SIP trunks** — Full self-service import with a step-by-step onboarding help panel that walks you through each setting
+- **Telnyx support** — Connect Telnyx accounts using the same wizard experience as Twilio
+- **Zadarma & DIDLogic** — Two more carriers added to the picker, giving you more flexibility on regions and pricing
+
+### 🎤 Post-Call Re-Transcription for Dualplex™ & Multimodal Calls
+
+You can now automatically re-transcribe completed calls from the original recording at any time. Useful when you want to retry transcription with the most capable STT model.
+
+Re-transcription is available for both **Dualplex™** and multimodal assistants, with clear billing transparency built right into the assistant view.
+
+### 📂 Split-View Detail Panels: Calls & Conversations
+
+The calls and conversations list pages now have a side-by-side detail panel. Click any record on the left, see the full details on the right: no more clicking back and forth. Reviewing dozens of calls or chats is suddenly a much smoother experience.
+
+- **Performance indexes added** — Navigating between records inside the panel is significantly faster, even on accounts with very high conversation volumes
+- **Extracted variables section** — Variables collected during the conversation are now displayed in a dedicated section on the conversation detail view
+
+### 💬 Disable & Enable AI Per Conversation
+
+Two new API endpoints let you pause and resume the AI for a specific conversation programmatically: perfect for human handoffs in WhatsApp and chat workflows. When the AI is disabled, your agents take over; re-enable it whenever you're ready to hand back.
+
+### 💸 Auto Top-Up for Chat Credits
+
+Chat credits can now top up automatically when balances run low, with email notifications keeping you informed of every refill. No more interrupted chat experiences because credits ran dry overnight.
+
+### 🔄 Telephony & Call Flow Improvements
+
+- **Initial message on AI-to-AI transfers** — When a call is transferred to an AI agent, the agent now speaks its initial message immediately for a smoother handoff
+- **Transfer caller details visible** — Transfer-to and client phone numbers are now displayed on transfer calls in the call view
+- **Single-character tool parameter names** — Tool parameters can now use single-character names, useful for compact JSON schemas
+
+### 🛠 Other Improvements & Fixes
+
+- **WhatsApp pre-verified number deletion** — Removing a pre-verified WhatsApp number now works correctly
+- **Phone number deletion** — Phone number deletion jobs now run reliably, with proper logging when something goes wrong
+
+</Update>
+
+<Update label="v1.7.7" description="Mar 30 2026">
+
+### 🧠 Gemini 3.1 Flash Live, GPT Realtime 1.5 in Dualplex
+
+### 🧠 Gemini 3.1 Flash Live: New Speech-to-Speech Model
+
+You can now run voice calls using **Google's Gemini 3.1 Flash Live** in speech-to-speech mode. This gives you another top-tier real-time voice option with excellent multilingual support and fast response times.
+
+### ⚡ GPT Realtime 1.5: Now with Dualplex™
+
+**GPT Realtime 1.5** now fully supports **Dualplex™** mode, our proprietary technology for the most natural-sounding AI phone calls. This means you get OpenAI's latest real-time model combined with superior interruption handling, smoother turn-taking, and lower perceived latency.
+
+### 📊 Per-Turn Latency Metrics
+
+Every conversation now tracks **detailed latency metrics for each turn**: how long the assistant took to respond, broken down by processing step. Use this to spot slow turns, compare model performance, and fine-tune your setup for the fastest possible calls.
+
+### 📈 Custom Dashboard Widgets
+
+Build your own dashboard with **customizable stat widgets**. Choose what data to display, apply percentage calculations, filter by time of day, and format with prefixes, suffixes, and abbreviations: all without writing code.
+
+### 🛠️ Other Improvements
+
+- **Cleaner transcripts** — Control tokens and SSML tags are now automatically stripped from call transcripts for a cleaner read, with an optional toggle to show them for debugging
+- **Soniox for WhatsApp voice notes** — WhatsApp audio message transcription now uses Soniox for better accuracy
+- **Widget auto-open fix** — The web widget now remembers when a visitor closes it and won't pop up again during the same session
+
+</Update>
+
+<Update label="v1.7.6" description="Mar 24 2026">
+
+### 🔀 Transfer to AI Assistant: Mid-Call Handoffs Between Specialized Agents
+
+<Frame>
+  <img
+    src="/resources/assistant-transfer-v1-7-6.png"
+    alt="Image"
+  />
+</Frame>
+
+Your AI voice agent can now **transfer a live call to a different AI assistant**: mid-conversation, with zero interruption. The target assistant takes over with its own voice, language model, and transcription provider, so each step of the call gets the right specialist.
+
+**Why this matters:** Instead of building one massive assistant that handles everything, you can now create specialized agents for each stage of a call: a sales qualifier that hands off to a technical expert, a receptionist that routes to a scheduling specialist, or a triage agent that escalates to a support specialist.
+
+- **Seamless mid-call handoff** — the caller stays on the line while the conversation transfers to a different AI assistant with full context
+- **Full provider swap** — each assistant can use its own voice (ElevenLabs, Cartesia), language model (GPT-4o, GPT-5.4), and transcription engine
+- **Rich assistant selector** — choose the target assistant from a dropdown showing avatar, language, voice, and mode at a glance
+- **Works with the Flow Builder** — add assistant transfers as actions in your visual call flows alongside warm transfers, DTMF, and keypad collection
+
+**Example use case:** A dental clinic's receptionist AI answers the call, qualifies the patient, then transfers to a scheduling assistant that speaks the patient's language and books directly into the calendar: all in one seamless call.
+
+### 📞 Warm Call Transfers: Now with Variable Injection
+
+Warm transfers just got smarter. When your AI agent transfers a call to a human supervisor, it can now **inject call variables** like the caller's name, reason for calling, or qualification score into the briefing. The supervisor picks up already knowing who's on the line and why.
+
+### 🧠 GPT-5.4 Mini & Nano Models Available
+
+Two new language models are now available for your AI assistants:
+
+- **GPT-5.4 Mini** — faster responses at lower cost, ideal for simple call flows like appointment booking and FAQ handling
+- **GPT-5.4 Nano** — the fastest option for high-volume, low-complexity calls where speed matters most
+
+Select them from the Language Model dropdown when configuring your assistant. All existing prompts and tools work without changes.
+
+### 🔧 Flow Builder Improvements
+
+The visual flow builder got several quality-of-life upgrades:
+
+- **New action types** — warm transfer, assistant transfer, DTMF input, and collect keypad are now available as flow actions
+- **Smarter action dropdown** — the dropdown now shows which tools are configured on your assistant, with warnings for unconfigured ones
+- **Edge delete on hover** — remove connections between nodes by hovering over the edge and clicking the delete button
+- **Import/export support** — save your flows as files and import them into other assistants or accounts
+- **UI fixes** — wider edit panel, fixed dropdown clipping, smoother animations
+
+</Update>
+
 <Update label="v1.7.5" description="Mar 16 2026">
 
 ### ✨ AI Assistant Advisor
