@@ -48,8 +48,15 @@ EARS AI offers built-in "tools" that your AI assistant can use during a call. Th
 
 - **Purpose**: Create your own custom API integrations that the AI can use during calls.
 - **Use Cases**: Check inventory, verify customer data, fetch real-time information, or integrate with your own systems.
-- **Configuration**: Set up in [Prompt & Tools settings](/ai-assistants/settings/prompt-and-tools#custom-mid-call-tools) by defining API endpoints, parameters, and when the AI should use them.
+- **Types**: A **HTTP request** tool calls your own endpoint directly, or an **Automation Platform** tool auto-creates a linked no-code flow for multi-step logic.
+- **Configuration**: Set up in [Prompt & Tools settings](/ai-assistants/settings/prompt-and-tools#custom-mid-call-tools) by defining API endpoints, parameters, static fields, and when the AI should use them. Values support dynamic [system variables](/ai-assistants/custom-tools#system-variables--dynamic-values) like `{{customer_phone}}`.
 - For detailed setup instructions and examples, see our [Custom Mid-Call Tools Guide](/ai-assistants/custom-tools).
+
+## 7. MCP Servers
+
+- **Purpose**: Connect a remote [Model Context Protocol](https://modelcontextprotocol.io) server so the AI can use **many** external tools at once, discovered automatically.
+- **Use Cases**: Connect a platform like HubSpot, your internal APIs, or knowledge tools to pull live data and trigger actions mid-conversation.
+- **Configuration**: Add a server under the **Mid call tools / MCP** page, then assign it to an assistant. See the [MCP Servers Guide](/ai-assistants/mcp-servers).
 
 ---
 

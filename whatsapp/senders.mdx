@@ -214,6 +214,23 @@ Customize how your business appears to customers:
 - **Websites** — Links to your websites
 - **Contact Information** — Additional email and phone contacts
 
+### Read Receipts Webhook
+
+Push delivery and read receipts to your own system whenever a message you send changes status — useful for delivery tracking, read confirmation, and audit trails.
+
+1. Edit your WhatsApp sender and open the **Read Receipts Webhook** section
+2. Enter your **Webhook URL** (where status updates will be POSTed)
+3. Click **Make test request** to send a sample event and confirm your endpoint receives it
+4. Save changes
+
+A **Signing Secret** is generated automatically the first time you save a URL (or run a test). Every request includes an `X-Signature-256` header (HMAC-SHA256 of the body) so you can verify it genuinely came from us — use **Regenerate** to rotate it. Each payload carries the `whatsapp_message_id` returned when you send a message, so you can match every status update to the original.
+
+<Note>
+The `read` status only fires if the recipient has read receipts enabled in their WhatsApp privacy settings. `delivered` always fires.
+</Note>
+
+See the [Read Receipts Webhook reference](/api-reference/webhooks/read-receipts-webhook) for the full payload and signature verification.
+
 ## Quality Rating & Messaging Limits
 
 Meta tracks your messaging quality and adjusts your limits accordingly.

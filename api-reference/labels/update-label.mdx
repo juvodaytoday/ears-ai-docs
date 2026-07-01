@@ -1,0 +1,51 @@
+---
+title: "Update label"
+api: "PUT /user/label/{id}"
+description: "Rename a label or change its color"
+---
+
+Update a label's name or color. Only the fields you send are changed.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The label ID. Must belong to your account.
+</ParamField>
+
+### Request Body
+
+<ParamField body="name" type="string">
+  New name (max 255 characters). Must be unique within your account.
+</ParamField>
+
+<ParamField body="color" type="string">
+  New color. One of: `gray`, `slate`, `red`, `orange`, `amber`, `green`, `teal`, `blue`, `purple`, `pink`. Send `null` to clear it.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">Success message</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">The label ID</ResponseField>
+    <ResponseField name="name" type="string">The label name</ResponseField>
+    <ResponseField name="color" type="string">The label color (or `null`)</ResponseField>
+    <ResponseField name="assistants_count" type="integer">Number of assistants this label is applied to</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{
+  "message": "Label updated successfully",
+  "data": { "id": 3, "name": "Inbound calls", "color": "teal", "assistants_count": 7 }
+}
+```
+
+```json 404 Not Found
+{ "message": "Label not found" }
+```
+
+</ResponseExample>

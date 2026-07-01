@@ -25,6 +25,30 @@ Custom Mid-Call Tools enable your AI assistant to:
   during calls - Seamless integration with your existing systems
 </Card>
 
+<Info>
+  Mid-call tools and [MCP servers](/ai-assistants/mcp-servers) both live under the
+  **Mid call tools / MCP** page in the sidebar. Use a mid-call tool for a single
+  HTTP endpoint you define by hand, and an MCP server to connect a remote server
+  that exposes many tools at once.
+</Info>
+
+## Tool types
+
+When you create a tool you choose one of two types:
+
+<CardGroup cols={2}>
+  <Card title="HTTP request" icon="plug">
+    Call **your own API** directly. You set the URL, method, headers, parameters
+    and (optionally) a static body. Best when you already have an endpoint.
+  </Card>
+  <Card title="Automation Platform" icon="diagram-project">
+    EARS AI **creates a linked flow for you** in the
+    [Automation Platform](/automation-platform/introduction). The tool's endpoint
+    is generated and locked automatically — you just build the logic in the flow
+    and end with a **Return Response** step. Best for no-code, multi-step logic.
+  </Card>
+</CardGroup>
+
 ## Setting Up Your Tool
 
 ### 1. Basic Configuration
@@ -41,11 +65,12 @@ Custom Mid-Call Tools enable your AI assistant to:
   <Step title="Configure Main Settings">
     Fill in the essential details:
 
-    - **Name**: Use lowercase and underscores (e.g., `check_order_status`)
+    - **Name**: Letters, numbers and underscores, starting with a letter or underscore (up to **64 characters**, e.g., `check_order_status`)
     - **Description**: Explain when and how the AI should use this tool
     - **Endpoint**: Your API URL (e.g., `https://api.yourcompany.com/orders`)
-    - **Timeout**: How long to wait for responses (in seconds)
+    - **Timeout**: How long to wait for responses (1–30 seconds)
     - **Method**: Choose GET, POST, PUT, PATCH, or DELETE
+    - **Body format**: For write methods (POST/PUT/PATCH), send the body as **JSON** (default) or **form-encoded** (`application/x-www-form-urlencoded`)
 
   </Step>
 
@@ -100,35 +125,97 @@ Custom Mid-Call Tools enable your AI assistant to:
   </Card>
 
   <Card title="Number" icon="calculator">
-    Numeric values like amounts, quantities, or IDs
+    Whole numbers like quantities or IDs
 
     ```yaml
     Type: number
-    Examples: 42, 99.99
+    Examples: 42, 1500
     ```
 
   </Card>
 
-  <Card title="true_false" icon="toggle-on">
-    Boolean values for yes/no situations
+  <Card title="Float" icon="calculator">
+    Decimal numbers like prices or amounts
 
     ```yaml
-    Type: true_false
+    Type: float
+    Examples: 19.99, 4.5
+    ```
+
+  </Card>
+
+  <Card title="Boolean" icon="toggle-on">
+    True/false values for yes/no situations
+
+    ```yaml
+    Type: boolean
     Examples: true, false
     ```
 
   </Card>
+</CardGroup>
 
-  <Card title="Formatting Help" icon="wand-magic-sparkles">
-    Add format instructions in descriptions
+<Info>
+  Each parameter can be marked **required** or optional. Optional parameters are
+  only sent when the AI actually collected a value, so your endpoint won't receive
+  empty fields. Add format hints in the description (e.g. `"Date in dd/mm/yyyy"`,
+  `"Phone without spaces"`).
+</Info>
+
+## Static fields
+
+Static fields are fixed key/value pairs that are **always sent** with every
+request — the AI never changes them. Use them for constants like a tenant id, a
+channel, or a source tag.
+
+```yaml
+source: autocalls
+tenant: acme
+channel: sms
+```
+
+Static field **values** also support [system variables](#system-variables--dynamic-values)
+(e.g. set `caller` to `{{customer_phone}}`).
+
+## System variables & dynamic values
+
+There are two ways to inject dynamic data into your tool:
+
+<CardGroup cols={2}>
+  <Card title="AI-extracted parameters" icon="robot">
+    Wrapped in **single braces** `{param}`. Replaced with the value the AI
+    collected during the conversation. Used in the URL path/query.
 
     ```yaml
-    "Date in dd/mm/yyyy"
-    "Phone without spaces"
+    https://api.example.com/orders/{order_id}
     ```
+  </Card>
+  <Card title="System & account variables" icon="brackets-curly">
+    Wrapped in **double braces** `{{variable}}`. Filled in automatically by the
+    platform at call time. Usable in the **URL**, **header values**, and
+    **static field values**.
 
+    ```yaml
+    Authorization: Bearer {{crm_key}}
+    ```
   </Card>
 </CardGroup>
+
+These system variables are injected automatically — no setup needed:
+
+| Variable | Value |
+| --- | --- |
+| `{{customer_phone}}` | The other party's phone number (caller for inbound, callee for outbound). Empty on web/chat. |
+| `{{assistant_phone}}` | The assistant's own phone number, if it has one. |
+| `{{assistant_id}}` | The assistant's unique ID. |
+| `{{assistant_name}}` | The assistant's name. |
+| `{{current_date}}` | Current date in the assistant's timezone (e.g. `2026-06-15`). |
+| `{{current_time}}` | Current time in the assistant's timezone (e.g. `14:30`). |
+
+<Info>
+  Any custom **account variables** you define are also available as `{{name}}` and
+  can be used the same way.
+</Info>
 
 ## Dynamic Endpoints
 
@@ -152,37 +239,56 @@ The AI will automatically replace `{order_id}` with the actual value collected d
 ## Testing Made Easy
 
 <Card title="Automatic Testing" icon="vial">
-Click "Test Tool" to run a test with dummy data:
-- String parameters: "test"
-- Number parameters: 1
-- Boolean parameters: true
+Click **Test tool** to fire a real request with realistic sample data:
+- **String** parameters: `"Sample data"`
+- **Number** parameters: `42`
+- **Float** parameters: `19.99`
+- **Boolean** parameters: `true`
+- **System variables** like `{{customer_phone}}` are filled with realistic placeholders (e.g. `+1234567890`, the assistant name/id)
 
-You'll see the response code and body, helping you verify everything works.
-
+You'll see the request data, response code and body, helping you verify everything
+works before going live.
 </Card>
 
-## Power User Feature: Automation Platform Integration
-
 <Note>
-  Need more complex logic? Connect your tool to the automation platform for
-  advanced workflows.
+  Automation Platform tools don't have a **Test tool** button — you test them by
+  running the linked flow inside the Automation Platform.
 </Note>
 
-For advanced integrations and complex workflows, you can combine custom tools with our [Automation Platform](/automation-platform/introduction).
+## Automation Platform tools
 
-Here's how to create powerful integrations:
+<Note>
+  Need more complex logic? Create an **Automation Platform** tool and EARS AI
+  builds and links the flow for you — no manual webhook setup required.
+</Note>
 
-1. In the automation platform:
+When you set the tool type to **Automation Platform**, EARS AI automatically
+creates a connected flow in the [Automation Platform](/automation-platform/introduction)
+and wires the tool's endpoint to it. The endpoint and method are **generated and
+locked**, so they can't accidentally be changed.
 
-   - Create a new flow
-   - Add a webhook trigger
-   - Build your logic (API calls, data transformation, etc.)
-   - End with "Return Response"
-
-2. In your custom tool:
-   - Use the webhook URL as your endpoint
-   - Add `/sync` at the end
-   - Example: `https://ai.earsconnect.com/automation/webhook/abc123/sync`
+<Steps>
+  <Step title="Create the tool">
+    Choose the **Automation Platform** type, give the tool a name, description and
+    parameters. On save, the linked flow is created automatically.
+  </Step>
+  <Step title="Open the flow">
+    On the tool's edit page, the connection card shows the flow status
+    (**Live**/**Disabled**) and an **Open flow in Automation Platform** button.
+    The flow starts from a webhook trigger and ends with a **Return Response**
+    step.
+  </Step>
+  <Step title="Build your logic">
+    Add steps between the trigger and the response — API calls, CRM updates,
+    branching, data transforms — then keep a **Return Response** step so the AI
+    receives a result.
+  </Step>
+  <Step title="Keep parameters in sync">
+    If you change the tool's parameters or static fields, use **Resync sample
+    data** so the flow's trigger sample matches. If the initial flow creation ever
+    fails, a **Retry flow creation** button appears on the edit page.
+  </Step>
+</Steps>
 
 This lets you:
 
@@ -190,6 +296,12 @@ This lets you:
 - Make multiple API calls in sequence
 - Apply complex business logic
 - Handle errors gracefully
+
+<Tip>
+  Prefer to wire it up yourself? You can still use a plain **HTTP request** tool
+  pointed at an existing Automation Platform webhook URL with `/sync` appended
+  (e.g. `https://ai.earsconnect.com/automate/api/v1/webhooks/abc123/sync`).
+</Tip>
 
 ## Real-World Examples
 

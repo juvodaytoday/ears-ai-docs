@@ -1,0 +1,46 @@
+---
+title: "List labels"
+api: "GET /user/labels"
+description: "List the labels in your account"
+---
+
+Labels are tags you can apply to assistants. Unlike folders, an assistant can have multiple labels, and a label can be applied to many assistants. Labels are private to your account.
+
+This endpoint returns your labels (paginated), each with the number of assistants it is applied to.
+
+### Query Parameters
+
+<ParamField query="per_page" type="integer">
+  Number of labels per page (1-100, default: 15)
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number (default: 1)
+</ParamField>
+
+### Response fields
+
+<ResponseField name="data" type="array">
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">The unique identifier of the label</ResponseField>
+    <ResponseField name="name" type="string">The label name</ResponseField>
+    <ResponseField name="color" type="string">The label color (or `null`)</ResponseField>
+    <ResponseField name="assistants_count" type="integer">Number of assistants this label is applied to</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{
+  "data": [
+    { "id": 3, "name": "Inbound", "color": "green", "assistants_count": 7 },
+    { "id": 5, "name": "Outbound", "color": "blue", "assistants_count": 2 }
+  ],
+  "current_page": 1,
+  "per_page": 15,
+  "total": 2
+}
+```
+
+</ResponseExample>

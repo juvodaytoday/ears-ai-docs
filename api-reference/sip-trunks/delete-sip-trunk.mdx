@@ -1,0 +1,46 @@
+---
+title: "Delete SIP trunk"
+api: "DELETE /user/phone-numbers/{id}"
+description: "Delete a SIP trunk and clean up voice infrastructure"
+---
+
+Deletes a SIP trunk and removes the associated inbound and outbound trunks from the voice infrastructure.
+
+This uses the same endpoint as releasing any phone number. For SIP trunks, the deletion is immediate (no billing period).
+
+<Note>
+See [Release phone number](/api-reference/phone-numbers/release-phone-number) for the full endpoint documentation. SIP trunks are immediately deleted and return `"Phone number deleted successfully."`.
+</Note>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the SIP trunk to delete
+</ParamField>
+
+### Response
+
+<ResponseExample>
+
+```json 200 Deleted
+{
+  "message": "Phone number deleted successfully."
+}
+```
+
+```json 404 Not Found
+{
+  "error": "Phone number not found."
+}
+```
+
+</ResponseExample>
+
+### What happens on deletion
+
+When you delete a SIP trunk:
+
+- **Inbound and outbound trunks** are removed from the voice infrastructure
+- Any **assistants** using this SIP trunk will have their phone number unassigned
+- Any **campaigns** using this number will have it removed from rotation
+- **Call history** is preserved and remains accessible

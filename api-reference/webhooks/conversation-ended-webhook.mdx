@@ -19,6 +19,10 @@ The webhook is sent as a POST request to your configured URL with the following 
 
 ### Payload Structure
 
+<ResponseField name="id" type="integer">
+  Numeric identifier of the conversation (the same id shown in the dashboard conversation URL). Use `conversation_id` (UUID) when calling the API.
+</ResponseField>
+
 <ResponseField name="conversation_id" type="string">
   Unique identifier (UUID) of the conversation
 </ResponseField>
@@ -59,19 +63,40 @@ The webhook is sent as a POST request to your configured URL with the following 
 </ResponseField>
 
 <ResponseField name="transcript" type="array">
-  Array of message objects representing the full conversation
+  Array of message objects representing the full conversation, ordered oldest to newest
   <Expandable title="Message properties">
     <ResponseField name="role" type="string">
-      The sender role: `assistant` or `user`
+      The sender role: `user`, `assistant`, or `system` (system messages mark events such as a human agent taking over the chat)
     </ResponseField>
     <ResponseField name="content" type="string">
-      The message content
+      The message text. For media messages this is the caption or a short placeholder (e.g. `[Image]`); audio notes contain the transcribed text
+    </ResponseField>
+    <ResponseField name="timestamp" type="string">
+      ISO 8601 timestamp of the individual message, in the user's configured timezone. Lets you order messages and see how long a conversation spanned (useful for chats that run over several days)
+    </ResponseField>
+    <ResponseField name="timestamp_unix" type="integer">
+      Unix timestamp (seconds since epoch) of the individual message. Convenient for arithmetic — e.g. computing the gap between two messages without parsing the ISO string
     </ResponseField>
   </Expandable>
 </ResponseField>
 
 <ResponseField name="formatted_transcript" type="string">
   Human-readable formatted transcript with `AI:` and `Customer:` prefixes
+</ResponseField>
+
+<ResponseField name="attachments" type="array">
+  Media files (images, videos, documents) shared during the conversation. Each entry includes a direct URL you can pass to external services (for example, image or video analysis). This is an empty array when no media was shared — media is typically present on WhatsApp conversations.
+  <Expandable title="Attachment properties">
+    <ResponseField name="type" type="string">
+      The media category. Possible values: `image`, `video`, `audio`, `document`
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      Direct URL to download the media file
+    </ResponseField>
+    <ResponseField name="filename" type="string">
+      Original file name of the media
+    </ResponseField>
+  </Expandable>
 </ResponseField>
 
 <ResponseField name="customer_phone" type="string">
@@ -105,6 +130,7 @@ The webhook is sent as a POST request to your configured URL with the following 
 <ResponseExample>
 ```json Conversation Ended Webhook Payload
 {
+  "id": 8842,
   "conversation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
   "type": "widget",
@@ -121,22 +147,31 @@ The webhook is sent as a POST request to your configured URL with the following 
   "transcript": [
     {
       "role": "assistant",
-      "content": "Hi! How can I help you today?"
+      "content": "Hi! How can I help you today?",
+      "timestamp": "2026-02-23T09:30:00+01:00",
+      "timestamp_unix": 1771835400
     },
     {
       "role": "user",
-      "content": "I have a question about your service."
+      "content": "I have a question about your service.",
+      "timestamp": "2026-02-23T09:31:12+01:00",
+      "timestamp_unix": 1771835472
     },
     {
       "role": "assistant",
-      "content": "Of course! I'd be happy to help. What would you like to know?"
+      "content": "Of course! I'd be happy to help. What would you like to know?",
+      "timestamp": "2026-02-23T09:31:15+01:00",
+      "timestamp_unix": 1771835475
     },
     {
       "role": "user",
-      "content": "What are your pricing plans?"
+      "content": "What are your pricing plans?",
+      "timestamp": "2026-02-23T09:58:40+01:00",
+      "timestamp_unix": 1771837120
     }
   ],
   "formatted_transcript": "AI: Hi! How can I help you today?\nCustomer: I have a question about your service.\nAI: Of course! I'd be happy to help. What would you like to know?\nCustomer: What are your pricing plans?",
+  "attachments": [],
   "customer_phone": null,
   "customer_name": "John Doe",
   "sender": null,
@@ -147,6 +182,7 @@ The webhook is sent as a POST request to your configured URL with the following 
 
 ```json WhatsApp Conversation Ended Webhook
 {
+  "id": 8843,
   "conversation_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
   "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
   "type": "whatsapp",
@@ -160,14 +196,30 @@ The webhook is sent as a POST request to your configured URL with the following 
   "transcript": [
     {
       "role": "user",
-      "content": "Hello, I'd like to book an appointment"
+      "content": "Hello, I'd like to book an appointment",
+      "timestamp": "2026-02-23T14:00:05+01:00",
+      "timestamp_unix": 1771851605
     },
     {
       "role": "assistant",
-      "content": "Hi! I'd be happy to help you book an appointment. What date works best for you?"
+      "content": "Hi! I'd be happy to help you book an appointment. What date works best for you?",
+      "timestamp": "2026-02-23T14:00:08+01:00",
+      "timestamp_unix": 1771851608
     }
   ],
   "formatted_transcript": "Customer: Hello, I'd like to book an appointment\nAI: Hi! I'd be happy to help you book an appointment. What date works best for you?",
+  "attachments": [
+    {
+      "type": "image",
+      "url": "https://example.com/media/public/20032/product-photo.jpg",
+      "filename": "product-photo.jpg"
+    },
+    {
+      "type": "document",
+      "url": "https://example.com/media/public/20031/order-receipt.pdf",
+      "filename": "order-receipt.pdf"
+    }
+  ],
   "customer_phone": "+1234567890",
   "customer_name": null,
   "sender": {
@@ -201,3 +253,4 @@ After 3 failed attempts, the webhook delivery is marked as failed and no further
 - Timestamps use the user's configured timezone (ISO 8601 format)
 - The `extracted_variables` are populated from your assistant's post-call schema evaluation
 - The `input_variables` contain data from pre-chat forms (web widget) or automation flows
+- The `attachments` array lists media (images, videos, documents) shared during the conversation, each with a downloadable `url` — useful for forwarding to external analysis tools. It is an empty array when no media was shared (most common on web widget conversations)

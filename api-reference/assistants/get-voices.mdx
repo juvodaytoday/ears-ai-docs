@@ -16,6 +16,26 @@ This endpoint returns a list of all available voices that can be used when creat
   Filter voices by language ID. Use the [Get Languages](/api-reference/assistants/get-languages) endpoint to get available language IDs.
 </ParamField>
 
+<ParamField query="synthesizer_provider_id" type="integer">
+  Filter voices by TTS provider ID (e.g. ElevenLabs, Cartesia, Azure). Use the [Get Synthesizer Providers](/api-reference/assistants/get-synthesizer-providers) endpoint to get available provider IDs.
+</ParamField>
+
+<ParamField query="gender" type="string">
+  Filter voices by gender (e.g., `male`, `female`).
+</ParamField>
+
+<ParamField query="age" type="string">
+  Filter voices by age category (e.g., `Young`, `Middle aged`).
+</ParamField>
+
+<ParamField query="accent" type="string">
+  Filter voices by accent (e.g., `American`, `British`).
+</ParamField>
+
+<ParamField query="search" type="string">
+  Free-text search across voice name, accent, age, and gender.
+</ParamField>
+
 ### Response fields
 
 <ResponseField name="data" type="array">
@@ -98,5 +118,6 @@ This endpoint returns a list of all available voices that can be used when creat
 - Use the `id` field as `voice_id` when creating or updating assistants
 - Filter by `mode` to get only voices compatible with your intended assistant type
 - Filter by `language_id` to get voices for a specific language
+- Filter by `gender`, `age`, or `accent` to narrow the list, or use `search` for free-text matching across those fields
 - If no filters are provided, all available voices are returned
 - Only voices that are public or belong to the authenticated user are returned

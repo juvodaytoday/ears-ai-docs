@@ -1,0 +1,152 @@
+---
+title: "Update SIP trunk"
+api: "PUT /user/phone-numbers/sip-trunks/{id}"
+description: "Update an existing SIP trunk configuration"
+---
+
+This endpoint updates an existing SIP trunk. Only include the fields you want to change — partial updates are supported. Changing credentials, address, or proxy settings automatically re-provisions the affected voice infrastructure trunks.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the SIP trunk to update
+</ParamField>
+
+### Body Parameters
+
+All fields are optional. Only send the fields you want to update.
+
+<ParamField body="phone_number" type="string" optional>
+  The SIP extension or phone number (1-15 characters)
+</ParamField>
+
+<ParamField body="nickname" type="string" optional>
+  A short, human-friendly label for the trunk. Maximum 50 characters. Send `null` to clear it.
+</ParamField>
+
+<ParamField body="sip_username" type="string" optional>
+  Username for SIP authentication (3-128 characters)
+</ParamField>
+
+<ParamField body="sip_password" type="string" optional>
+  Password for SIP authentication (minimum 3 characters)
+</ParamField>
+
+<ParamField body="sip_address" type="string" optional>
+  The SIP server address without port
+</ParamField>
+
+<ParamField body="sip_calling_format" type="string" optional>
+  The outbound calling number format: `+e164`, `e164`, or `national`
+</ParamField>
+
+<ParamField body="inbound_authorization_type" type="string" optional>
+  How inbound calls are authenticated: `auth` or `ip`. When switching to `ip`, you must also provide `allowed_inbound_ips`. When switching to `auth`, any existing IP whitelist is cleared.
+</ParamField>
+
+<ParamField body="allowed_inbound_ips" type="array" optional>
+  Array of IP addresses allowed for inbound calls. **Required** when `inbound_authorization_type` is set to `ip`.
+</ParamField>
+
+<ParamField body="country_code" type="string" optional>
+  ISO 3166-2 country code
+</ParamField>
+
+<ParamField body="outbound_proxy" type="boolean" optional>
+  Route outbound calls through a fixed IP address
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated SIP trunk object (same fields as [Get SIP trunk](/api-reference/sip-trunks/get-sip-trunk))
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Updated credentials
+{
+  "message": "SIP trunk updated successfully.",
+  "data": {
+    "id": 42,
+    "phone_number": "1000",
+    "nickname": "Provider X — Main",
+    "sip_username": "new_username",
+    "sip_address": "sip.provider.com",
+    "sip_calling_format": "+e164",
+    "inbound_authorization_type": "auth",
+    "allowed_inbound_ips": null,
+    "outbound_proxy": false,
+    "country_code": "US",
+    "inbound_trunk_id": "ST_newtrunkid1",
+    "outbound_trunk_id": "ST_newtrunkid2",
+    "created_at": "2026-03-31T10:00:00.000000Z",
+    "updated_at": "2026-03-31T12:00:00.000000Z"
+  }
+}
+```
+
+```json 200 Switched to IP auth
+{
+  "message": "SIP trunk updated successfully.",
+  "data": {
+    "id": 42,
+    "phone_number": "1000",
+    "nickname": "Provider X — Main",
+    "sip_username": "myuser",
+    "sip_address": "sip.provider.com",
+    "sip_calling_format": "+e164",
+    "inbound_authorization_type": "ip",
+    "allowed_inbound_ips": ["203.0.113.10"],
+    "outbound_proxy": false,
+    "country_code": "US",
+    "inbound_trunk_id": "ST_newtrunkid1",
+    "outbound_trunk_id": "ST_yyyyyyyyyyyy",
+    "created_at": "2026-03-31T10:00:00.000000Z",
+    "updated_at": "2026-03-31T12:00:00.000000Z"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": "SIP trunk not found."
+}
+```
+
+```json 422 Validation Error
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "allowed_inbound_ips": ["At least one allowed IP address is required when authorization type is \"ip\"."]
+  }
+}
+```
+
+```json 500 Provisioning Error
+{
+  "error": "Failed to update SIP trunk. Please try again or contact support."
+}
+```
+
+</ResponseExample>
+
+### Re-provisioning behavior
+
+The following field changes trigger automatic re-provisioning of voice infrastructure trunks:
+
+| Field changed | Inbound trunk | Outbound trunk |
+|---------------|:-------------:|:--------------:|
+| `sip_username` | Re-created | Re-created |
+| `sip_password` | Re-created | Re-created |
+| `sip_address` | — | Re-created |
+| `phone_number` | Re-created | Re-created |
+| `inbound_authorization_type` | Re-created | — |
+| `allowed_inbound_ips` | Re-created | — |
+| `outbound_proxy` | — | Re-created |
+
+Fields like `sip_calling_format`, `country_code` are stored locally and do not trigger re-provisioning.

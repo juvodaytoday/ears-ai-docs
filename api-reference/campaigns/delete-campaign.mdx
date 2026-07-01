@@ -1,0 +1,52 @@
+---
+title: "Delete campaign"
+api: "DELETE /user/campaign/{id}"
+description: "Delete a specific campaign"
+---
+
+This endpoint allows you to delete a campaign that belongs to the authenticated user. If the campaign is currently running, it is stopped automatically before deletion.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the campaign to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Confirmation message indicating the campaign was deleted successfully
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="404 Not Found">
+  <Expandable title="Error Response">
+    <ResponseField name="message" type="string">
+      Error message when the campaign is not found or doesn't belong to the authenticated user
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{
+  "message": "Campaign deleted successfully"
+}
+```
+
+```json 404 Not Found
+{
+  "message": "Campaign not found"
+}
+```
+
+</ResponseExample>
+
+### Notes
+
+- Only campaigns that belong to the authenticated user can be deleted
+- Running campaigns are stopped automatically before deletion
+- All leads attached to the campaign are removed
+- Phone number assignments on the campaign are released

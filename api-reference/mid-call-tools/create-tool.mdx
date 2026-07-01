@@ -8,8 +8,16 @@ This endpoint allows you to create a new mid call tool that can be used by your 
 
 ### Body Parameters
 
+<Info>
+  The public API creates **HTTP request** tools. Automation Platform tools (which
+  generate a linked flow) are created from the dashboard. Tool values support
+  dynamic variables — use `{param}` for AI-extracted parameters in the URL, and
+  `{{variable}}` (e.g. `{{customer_phone}}`) in the URL, header values, and static
+  field values.
+</Info>
+
 <ParamField body="name" type="string" required>
-  Tool name - must contain only lowercase letters and underscores, and start with a letter (e.g., `get_weather`, `book_appointment`)
+  Tool name — letters, numbers and underscores, starting with a letter or underscore (max 64 characters, e.g., `get_weather`, `book_appointment`)
 </ParamField>
 
 <ParamField body="description" type="string" required>
@@ -17,11 +25,15 @@ This endpoint allows you to create a new mid call tool that can be used by your 
 </ParamField>
 
 <ParamField body="endpoint" type="string" required>
-  Valid URL of the API endpoint to call
+  Valid URL of the API endpoint to call (max 2048 characters)
 </ParamField>
 
 <ParamField body="method" type="string" required>
   HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`
+</ParamField>
+
+<ParamField body="body_format" type="string" optional>
+  How the request body is encoded for write methods (POST/PUT/PATCH): `json` (default) or `form` (`application/x-www-form-urlencoded`)
 </ParamField>
 
 <ParamField body="timeout" type="integer" optional>
@@ -35,7 +47,19 @@ This endpoint allows you to create a new mid call tool that can be used by your 
       Header name
     </ParamField>
     <ParamField body="value" type="string" required>
-      Header value
+      Header value (max 2048 chars; supports `{{variable}}` substitution)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="static_fields" type="array" optional>
+  Fixed key/value pairs always sent with the request (the AI never changes them)
+  <Expandable title="static_fields properties">
+    <ParamField body="key" type="string" required>
+      Field key (max 64 chars)
+    </ParamField>
+    <ParamField body="value" type="string" optional>
+      Field value (max 2048 chars; supports `{{variable}}` substitution)
     </ParamField>
   </Expandable>
 </ParamField>
@@ -44,13 +68,16 @@ This endpoint allows you to create a new mid call tool that can be used by your 
   Parameters that the AI will extract from conversation and send to the endpoint
   <Expandable title="schema properties">
     <ParamField body="name" type="string" required>
-      Parameter name (2-32 chars, must start with letter, can contain letters and underscores)
+      Parameter name (1-64 chars, must start with a letter or underscore, can contain letters, numbers and underscores)
     </ParamField>
     <ParamField body="type" type="string" required>
-      Parameter type: `string`, `number`, or `boolean`
+      Parameter type: `string`, `number`, `float`, or `boolean`
     </ParamField>
     <ParamField body="description" type="string" required>
       Description to help AI understand how to extract this parameter (3-255 chars)
+    </ParamField>
+    <ParamField body="required" type="boolean" optional>
+      Whether the AI must collect this parameter. Optional parameters are only sent when a value was collected. Defaults to `false`.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -76,6 +103,10 @@ This endpoint allows you to create a new mid call tool that can be used by your 
       Tool description
     </ResponseField>
 
+    <ResponseField name="type" type="string">
+      Tool type: `http` or `automation`
+    </ResponseField>
+
     <ResponseField name="endpoint" type="string">
       API endpoint URL
     </ResponseField>
@@ -84,12 +115,20 @@ This endpoint allows you to create a new mid call tool that can be used by your 
       HTTP method
     </ResponseField>
 
+    <ResponseField name="body_format" type="string">
+      Request body encoding: `json` or `form`
+    </ResponseField>
+
     <ResponseField name="timeout" type="integer">
       Request timeout in seconds
     </ResponseField>
 
     <ResponseField name="headers" type="array">
       HTTP headers
+    </ResponseField>
+
+    <ResponseField name="static_fields" type="array">
+      Fixed key/value pairs always sent with the request
     </ResponseField>
 
     <ResponseField name="schema" type="array">
@@ -115,8 +154,10 @@ This endpoint allows you to create a new mid call tool that can be used by your 
     "id": 1,
     "name": "check_order_status",
     "description": "Use this tool to check the status of a customer's order.",
-    "endpoint": "https://api.yourstore.com/orders/status",
+    "type": "http",
+    "endpoint": "https://api.yourstore.com/orders/{order_id}/status",
     "method": "GET",
+    "body_format": "json",
     "timeout": 10,
     "headers": [
       {
@@ -125,24 +166,37 @@ This endpoint allows you to create a new mid call tool that can be used by your 
       },
       {
         "name": "Authorization",
-        "value": "Bearer sk_..."
+        "value": "Bearer {{crm_key}}"
+      }
+    ],
+    "static_fields": [
+      {
+        "key": "source",
+        "value": "autocalls"
+      },
+      {
+        "key": "caller",
+        "value": "{{customer_phone}}"
       }
     ],
     "schema": [
       {
         "name": "order_id",
         "type": "string",
-        "description": "The customer's order ID"
+        "description": "The customer's order ID",
+        "required": true
       },
       {
-        "name": "order_number",
-        "type": "number",
-        "description": "The numeric order number"
+        "name": "amount",
+        "type": "float",
+        "description": "Order total as a decimal, e.g. 19.99",
+        "required": false
       },
       {
         "name": "priority_order",
         "type": "boolean",
-        "description": "Whether this is a priority order"
+        "description": "Whether this is a priority order",
+        "required": false
       }
     ],
     "created_at": "2025-10-10T12:00:00.000000Z",
@@ -153,10 +207,10 @@ This endpoint allows you to create a new mid call tool that can be used by your 
 
 ```json 422 Validation Error
 {
-  "message": "The name field must contain only lowercase letters and underscores, and start with a letter.",
+  "message": "Tool name must start with a letter or underscore and contain only letters, numbers, and underscores (max 64 characters).",
   "errors": {
     "name": [
-      "Tool name must contain only lowercase letters and underscores, and start with a letter."
+      "Tool name must start with a letter or underscore and contain only letters, numbers, and underscores (max 64 characters)."
     ]
   }
 }

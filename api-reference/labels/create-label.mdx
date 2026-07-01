@@ -1,0 +1,48 @@
+---
+title: "Create label"
+api: "POST /user/label"
+description: "Create a label to tag your assistants"
+---
+
+Create a label to tag assistants across folders (for example, `inbound` or `outbound`). Apply labels to assistants with the `label_ids` field on the [Create assistant](/api-reference/assistants/create-assistant) and [Update assistant](/api-reference/assistants/update-assistant) endpoints.
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  The label name (max 255 characters). Must be unique within your account.
+</ParamField>
+
+<ParamField body="color" type="string">
+  A color for the label badge. One of: `gray`, `slate`, `red`, `orange`, `amber`, `green`, `teal`, `blue`, `purple`, `pink`.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">Success message</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">The unique identifier of the created label</ResponseField>
+    <ResponseField name="name" type="string">The label name</ResponseField>
+    <ResponseField name="color" type="string">The label color (or `null`)</ResponseField>
+    <ResponseField name="assistants_count" type="integer">Number of assistants this label is applied to (always `0` for a new label)</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 201 Success Response
+{
+  "message": "Label created successfully",
+  "data": { "id": 3, "name": "Inbound", "color": "green", "assistants_count": 0 }
+}
+```
+
+```json 422 Validation Error
+{
+  "message": "The name has already been taken.",
+  "errors": { "name": ["The name has already been taken."] }
+}
+```
+
+</ResponseExample>

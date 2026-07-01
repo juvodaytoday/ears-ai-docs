@@ -1,0 +1,232 @@
+---
+title: "Read Receipts Webhook"
+icon: "webhook"
+description: "Signed webhook sent on every delivery-status change (sent, delivered, read, failed) of a WhatsApp message you send"
+---
+
+The Read Receipts Webhook delivers a signed HTTP callback to your server every time a WhatsApp message you send changes status — `sent`, `delivered`, `read`, or `failed`. Use it for delivery tracking, read confirmation, and audit trails.
+
+It is configured **per WhatsApp sender**, so different senders can point at different endpoints.
+
+## Webhook Configuration
+
+To enable read receipts for a sender:
+
+1. Edit your [WhatsApp sender](/whatsapp/senders) and open the **Read Receipts Webhook** section
+2. Enter your **Webhook URL** and save
+3. A **Signing Secret** is generated automatically — use it to verify the signature on each request
+
+Each payload carries the `whatsapp_message_id` returned by the [Send Template](/api-reference/whatsapp/send-template) and [Send Free-form](/api-reference/whatsapp/send-freeform) endpoints, so you can match every update to the original message.
+
+## Request Format
+
+The webhook is sent as a POST request to your configured URL with a JSON body and an `X-Signature-256` header.
+
+### Payload Structure
+
+<ResponseField name="event" type="string">
+  The event type. Value: `message_status`
+</ResponseField>
+
+<ResponseField name="whatsapp_message_id" type="integer">
+  Numeric identifier of the message — the same `whatsapp_message_id` returned when you sent the message. Use this to correlate the status update with the original send.
+</ResponseField>
+
+<ResponseField name="message_sid" type="string">
+  Provider message identifier for messages sent over Twilio, or `null`
+</ResponseField>
+
+<ResponseField name="meta_message_id" type="string">
+  Provider message identifier (WhatsApp `wamid`) for messages sent over the Meta Cloud API, or `null`
+</ResponseField>
+
+<ResponseField name="conversation_id" type="string">
+  Unique identifier (UUID) of the conversation the message belongs to, or `null`
+</ResponseField>
+
+<ResponseField name="assistant_id" type="string">
+  Unique identifier (UUID) of the assistant connected to the sender, or `null`
+</ResponseField>
+
+<ResponseField name="sender" type="object">
+  The WhatsApp sender the message was sent from
+  <Expandable title="Sender properties">
+    <ResponseField name="id" type="integer">
+      Numeric identifier of the sender
+    </ResponseField>
+    <ResponseField name="phone_number" type="string">
+      The sender's WhatsApp phone number
+    </ResponseField>
+    <ResponseField name="display_name" type="string">
+      The sender's display name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="to" type="string">
+  The recipient phone number
+</ResponseField>
+
+<ResponseField name="from" type="string">
+  The sender phone number
+</ResponseField>
+
+<ResponseField name="direction" type="string">
+  Message direction. Value: `outbound`
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The new delivery status. Possible values: `sent`, `delivered`, `read`, `failed`, `undelivered`
+</ResponseField>
+
+<ResponseField name="error_code" type="integer">
+  Provider error code when `status` is `failed` or `undelivered`, otherwise `null`
+</ResponseField>
+
+<ResponseField name="error_message" type="string">
+  Raw provider error message when the message failed, otherwise `null`
+</ResponseField>
+
+<ResponseField name="error_description" type="string">
+  Human-readable description of the error, otherwise `null`
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp of when the platform recorded the status change, in the WhatsApp number owner's configured timezone
+</ResponseField>
+
+<ResponseField name="provider_timestamp" type="string">
+  ISO 8601 timestamp of the carrier's own event time, in the owner's configured timezone. Present for messages sent over the Meta Cloud API; `null` over Twilio (Twilio's status callback does not include an event time). Prefer this when present — it is the carrier's authoritative time.
+</ResponseField>
+
+<ResponseExample>
+```json Delivered
+{
+  "event": "message_status",
+  "whatsapp_message_id": 890,
+  "message_sid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "meta_message_id": null,
+  "conversation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "sender": {
+    "id": 42,
+    "phone_number": "+19876543210",
+    "display_name": "My Business"
+  },
+  "to": "+1234567890",
+  "from": "+19876543210",
+  "direction": "outbound",
+  "status": "delivered",
+  "error_code": null,
+  "error_message": null,
+  "error_description": null,
+  "timestamp": "2026-06-08T09:30:02+00:00",
+  "provider_timestamp": "2026-06-08T09:30:00+00:00"
+}
+```
+
+```json Read
+{
+  "event": "message_status",
+  "whatsapp_message_id": 890,
+  "message_sid": null,
+  "meta_message_id": "wamid.HBgLMTIzNDU2Nzg5MBUCABEYEjk...",
+  "conversation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "sender": {
+    "id": 42,
+    "phone_number": "+19876543210",
+    "display_name": "My Business"
+  },
+  "to": "+1234567890",
+  "from": "+19876543210",
+  "direction": "outbound",
+  "status": "read",
+  "error_code": null,
+  "error_message": null,
+  "error_description": null,
+  "timestamp": "2026-06-08T09:31:12+00:00",
+  "provider_timestamp": "2026-06-08T09:31:10+00:00"
+}
+```
+
+```json Failed
+{
+  "event": "message_status",
+  "whatsapp_message_id": 891,
+  "message_sid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "meta_message_id": null,
+  "conversation_id": null,
+  "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "sender": {
+    "id": 42,
+    "phone_number": "+19876543210",
+    "display_name": "My Business"
+  },
+  "to": "+1234567890",
+  "from": "+19876543210",
+  "direction": "outbound",
+  "status": "failed",
+  "error_code": 63016,
+  "error_message": "Template message 24h window expired",
+  "error_description": "Template message 24h window expired - customer must reply first",
+  "timestamp": "2026-06-08T09:32:00+00:00",
+  "provider_timestamp": null
+}
+```
+</ResponseExample>
+
+## Verifying the Signature
+
+Every request includes an `X-Signature-256` header containing an HMAC-SHA256 of the **raw request body**, keyed with your sender's **Signing Secret**:
+
+```
+X-Signature-256: sha256=<hmac_sha256(raw_body, signing_secret)>
+```
+
+Recompute the signature over the raw body and compare it using a constant-time comparison. Reject the request if it does not match.
+
+<CodeGroup>
+```javascript Node.js
+import crypto from "crypto";
+
+function isValid(rawBody, signatureHeader, secret) {
+  const expected =
+    "sha256=" + crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(expected),
+    Buffer.from(signatureHeader || "")
+  );
+}
+```
+
+```php PHP
+function isValid(string $rawBody, ?string $signatureHeader, string $secret): bool
+{
+    $expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+
+    return hash_equals($expected, (string) $signatureHeader);
+}
+```
+</CodeGroup>
+
+## Retry Behavior
+
+If your endpoint returns a non-2xx status or the request fails, delivery is retried:
+
+| Attempt | Delay |
+|---------|-------|
+| 1st retry | 30 seconds |
+| 2nd retry | 60 seconds |
+| 3rd retry | 120 seconds |
+
+Server errors (5xx) and rate limits (429) are retried. Client errors (4xx) are treated as a misconfigured endpoint and are not retried.
+
+## Important Notes
+
+- The webhook is configured **per sender** — each sender can have its own URL and secret.
+- Events triggered by the **Make test request** button in the sender settings include an extra `test: true` field and use placeholder values. Real status updates never include `test`.
+- `read` only fires if the recipient has read receipts enabled in their WhatsApp privacy settings. `delivered` always fires.
+- Statuses can arrive out of order or be re-sent by the provider. We only forward genuine forward progress, so you won't receive a `delivered` after a `read` for the same message — but you should still treat the webhook as the source of truth and de-duplicate by `whatsapp_message_id` + `status`.
+- `timestamp` is always the time the platform recorded the change (in the number owner's timezone). `provider_timestamp` is the carrier's authoritative event time when available — prefer it for accuracy, and fall back to `timestamp` when it is `null`.
+- Use **Regenerate** in the sender settings to rotate the signing secret if it is ever exposed.

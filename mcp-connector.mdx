@@ -1,0 +1,210 @@
+---
+title: "Claude & ChatGPT Connector (MCP)"
+icon: "plug"
+description: "Build and run your AI phone agents straight from Claude or ChatGPT — over a secure, one-time OAuth connection."
+---
+
+The EARS AI connector lets you **build and operate your AI phone agents straight from Claude or
+ChatGPT**. Instead of clicking through the dashboard, you just describe what you want — and your AI
+assistant does it on your account:
+
+- _"Create an inbound receptionist that books appointments."_
+- _"Show me why my last campaign call failed."_
+- _"Add three leads to my follow-up campaign and start it."_
+
+<Note>
+  It's a **remote MCP server** secured with **OAuth 2.0**. You connect once, sign in to approve, and
+  every action stays scoped to **your own EARS AI account** — the connector only ever sees and
+  changes your data.
+</Note>
+
+## What you can do
+
+<CardGroup cols={2}>
+  <Card title="Build & refine assistants" icon="robot" href="/ai-assistants/what-is-ai-assistant" color="#06df4b">
+    Inbound and outbound: system prompt, voice, language, model and call behaviour. Attach
+    knowledgebases (your documents) and mid-call tools (live API lookups during a call).
+  </Card>
+  <Card title="Run outbound campaigns" icon="bullhorn" href="/campaigns/index" color="#06df4b">
+    Create campaigns, add and manage leads, and start, pause or resume them.
+  </Card>
+  <Card title="Review & improve" icon="magnifying-glass-chart" href="/outbound-calls/overview" color="#06df4b">
+    List calls, read full transcripts and post-call evaluations, then update the assistant or its
+    tools — a complete build → review → improve loop.
+  </Card>
+  <Card title="Manage your account" icon="gear" href="/api-reference/introduction" color="#06df4b">
+    Knowledgebases & documents, phone numbers & SIP trunks, WhatsApp senders & templates,
+    conversations, folders, labels, API keys and your blacklist.
+  </Card>
+</CardGroup>
+
+Read and write are separate tools. Actions that **spend balance** (placing a call, sending
+SMS/WhatsApp, buying a number) or **delete data** always ask for confirmation first. Integration
+secrets (e.g. auth tokens on your mid-call tools) are **masked** in responses.
+
+## Before you start
+
+- An **EARS AI account** at [app.autocalls.ai](https://app.autocalls.ai) — or your white-label
+  provider's domain.
+- An **active plan** for the features you use (some actions consume call minutes or chat credits).
+
+### Your connection link
+
+This is the secure address Claude and ChatGPT use to reach your account. Copy it — you'll paste it
+during setup, then sign in to approve.
+
+```
+https://app.autocalls.ai/mcp
+```
+
+<Info>
+  **White-label customers:** use **your provider's domain** instead — `https://{your-domain}/mcp`.
+  The branding follows the domain, so you only ever see your provider's brand.
+</Info>
+
+## Add the connector
+
+<Tabs>
+  <Tab title="Claude">
+    <Steps>
+      <Step title="Open Customize">
+        In Claude, open the left sidebar and click **Customize**.
+        <Frame>
+          <img src="/resources/mcp/claude-1.png" alt="Open the Customize panel in Claude" />
+        </Frame>
+      </Step>
+      <Step title="Open Connectors">
+        In the Customize panel, click **Connectors**.
+        <Frame>
+          <img src="/resources/mcp/claude-2.png" alt="Open Connectors in the Claude Customize panel" />
+        </Frame>
+      </Step>
+      <Step title="Add a custom connector">
+        Click the **+** button in the top-right of the Connectors panel, then choose **Add custom
+        connector**.
+        <Frame>
+          <img src="/resources/mcp/claude-3.png" alt="Add a custom connector in Claude" />
+        </Frame>
+      </Step>
+      <Step title="Name it and paste your link">
+        Type any name (e.g. _Autocalls_), paste your connection link into **Remote MCP server URL**,
+        leave the OAuth fields empty, then click **Add**.
+        <Frame>
+          <img src="/resources/mcp/claude-4.png" alt="Paste the EARS AI MCP URL in Claude" />
+        </Frame>
+      </Step>
+      <Step title="Sign in and approve">
+        Log in to your EARS AI account and approve. Your tools then appear in the list — you're
+        connected.
+        <Frame>
+          <img src="/resources/mcp/claude-5.png" alt="Sign in and approve the EARS AI connector in Claude" />
+        </Frame>
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Open Settings">
+        In ChatGPT, click your name at the bottom-left, then **Settings**.
+        <Frame>
+          <img src="/resources/mcp/chatgpt-1.png" alt="Open Settings in ChatGPT" />
+        </Frame>
+      </Step>
+      <Step title="Go to Apps → Advanced settings">
+        Open the **Apps** tab (connectors now live under "Apps"), then open **Advanced settings**.
+        <Frame>
+          <img src="/resources/mcp/chatgpt-2.png" alt="Open Apps then Advanced settings in ChatGPT" />
+        </Frame>
+      </Step>
+      <Step title="Enable Developer mode, then Create app">
+        Switch on **Developer mode** (this lets you add a custom connector), then click **Create app**
+        at the top.
+        <Frame>
+          <img src="/resources/mcp/chatgpt-3.png" alt="Enable Developer mode and Create app in ChatGPT" />
+        </Frame>
+      </Step>
+      <Step title="Paste your link and create">
+        Give it a name, paste your connection link into the **Server URL** field, set
+        **Authentication** to **OAuth**, tick _"I understand and want to continue"_, then **Create**.
+        Sign in to your EARS AI account and approve.
+        <Frame>
+          <img src="/resources/mcp/chatgpt-4.png" alt="Paste the EARS AI MCP URL and create the app in ChatGPT" />
+        </Frame>
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Tip>
+  Once the connector is listed in the Claude and ChatGPT directories, you'll also be able to add it in
+  one click by searching for **EARS AI** under Settings → Connectors — no manual URL needed.
+</Tip>
+
+## Try it
+
+Start a new chat in Claude or ChatGPT and ask, for example:
+
+<CardGroup cols={2}>
+  <Card title="Build" icon="wand-magic-sparkles" color="#06df4b">
+    "Create an inbound receptionist for my dental clinic that books appointments and answers FAQs."
+  </Card>
+  <Card title="Improve" icon="arrow-trend-up" color="#06df4b">
+    "Read my last 5 calls and tell me what my assistant got wrong."
+  </Card>
+  <Card title="Integrate" icon="plug-circle-bolt" color="#06df4b">
+    "Create a mid-call tool that looks up an order by number from our API."
+  </Card>
+  <Card title="Run" icon="bullhorn" color="#06df4b">
+    "Set up an outbound campaign for this week's leads and start it."
+  </Card>
+</CardGroup>
+
+## Security & privacy
+
+- **OAuth 2.0** with a branded consent screen — no API key is ever pasted into the chat client.
+- **Scoped to your account** — the connector can only see and change your own data.
+- **Secrets masked** — auth tokens stored on your tools are never returned in plain text.
+- **No chat-history harvesting** — the connector acts only on your EARS AI resources.
+- Privacy policy: [autocalls.ai/privacy-policy](https://autocalls.ai/privacy-policy).
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Which AI apps can I use it with?">
+    This guide covers **Claude** and **ChatGPT**. The connector is a standard remote MCP server, so it
+    also works with any other MCP-compatible client (for example Cursor or VS Code) — the setup is the
+    same: add a custom connector and paste your connection link.
+  </Accordion>
+  <Accordion title="Do I need an API key?">
+    No. Connection is handled by **OAuth** — you simply sign in to your EARS AI account and approve.
+    No key is pasted into the chat app.
+  </Accordion>
+  <Accordion title="Is it safe to connect?">
+    Yes. Every tool is scoped to your own authenticated account, write and destructive actions ask for
+    confirmation, and any integration secrets you've stored are masked in responses.
+  </Accordion>
+  <Accordion title="Will it spend my balance?">
+    Only when you explicitly ask it to place a call or send an SMS/WhatsApp — and it confirms first.
+    Building and editing assistants, reading calls, and managing your account don't place calls.
+  </Accordion>
+  <Accordion title={`My call is blocked in ChatGPT ("blocked by OpenAI safety checks")`}>
+    This block comes from **OpenAI's own safety layer inside ChatGPT**, not from us. When ChatGPT is
+    about to trigger a tool that places a real outbound phone call, OpenAI's policy on AI agents
+    initiating phone calls stops it before the request ever reaches us. We can't override OpenAI's
+    decision from our side, and it mainly affects the **ChatGPT browser**.
+
+    Things that work:
+    - **ChatGPT desktop app** or an **OpenAI agent** — the same call goes through there.
+    - **Claude** — the call works there too, including placing a reminder call through the assistant.
+    - **Schedule an outbound campaign** — for reminder calls ("call John at 16:00"), set up a
+      scheduled outbound campaign (assistant + contact + time) from the dashboard or via the API /
+      Automate. It never goes through ChatGPT's safety layer, so it's never blocked.
+
+    A native ChatGPT integration is in review with OpenAI and coming soon.
+  </Accordion>
+</AccordionGroup>
+
+## Support
+
+Questions? Email [contact@autocalls.ai](mailto:contact@autocalls.ai) or browse the rest of the
+[documentation](/introduction/what-is-autocalls).

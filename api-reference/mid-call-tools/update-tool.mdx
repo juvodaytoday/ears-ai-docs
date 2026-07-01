@@ -14,8 +14,13 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
 
 ### Body Parameters
 
+<Note>
+  For tools linked to an Automation Platform flow, the `endpoint`, `method`, and
+  `body_format` fields are ignored to protect the flow connection.
+</Note>
+
 <ParamField body="name" type="string" optional>
-  Tool name - must contain only lowercase letters and underscores, and start with a letter
+  Tool name — letters, numbers and underscores, starting with a letter or underscore (max 64 characters)
 </ParamField>
 
 <ParamField body="description" type="string" optional>
@@ -23,11 +28,15 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
 </ParamField>
 
 <ParamField body="endpoint" type="string" optional>
-  Valid URL of the API endpoint to call
+  Valid URL of the API endpoint to call (max 2048 characters)
 </ParamField>
 
 <ParamField body="method" type="string" optional>
   HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`
+</ParamField>
+
+<ParamField body="body_format" type="string" optional>
+  Request body encoding for write methods: `json` (default) or `form`
 </ParamField>
 
 <ParamField body="timeout" type="integer" optional>
@@ -41,7 +50,19 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
       Header name
     </ParamField>
     <ParamField body="value" type="string" required>
-      Header value
+      Header value (supports `{{variable}}` substitution)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="static_fields" type="array" optional>
+  Fixed key/value pairs always sent with the request (replaces existing static fields)
+  <Expandable title="static_fields properties">
+    <ParamField body="key" type="string" required>
+      Field key (max 64 chars)
+    </ParamField>
+    <ParamField body="value" type="string" optional>
+      Field value (max 2048 chars; supports `{{variable}}` substitution)
     </ParamField>
   </Expandable>
 </ParamField>
@@ -50,13 +71,16 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
   Parameters schema (replaces existing schema)
   <Expandable title="schema properties">
     <ParamField body="name" type="string" required>
-      Parameter name (2-32 chars)
+      Parameter name (1-64 chars, starts with a letter or underscore)
     </ParamField>
     <ParamField body="type" type="string" required>
-      Parameter type: `string`, `number`, or `boolean`
+      Parameter type: `string`, `number`, `float`, or `boolean`
     </ParamField>
     <ParamField body="description" type="string" required>
       Parameter description (3-255 chars)
+    </ParamField>
+    <ParamField body="required" type="boolean" optional>
+      Whether the AI must collect this parameter (default `false`)
     </ParamField>
   </Expandable>
 </ParamField>
@@ -80,8 +104,10 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
     "id": 1,
     "name": "update_customer_info",
     "description": "Use this tool to update customer information in the system.",
+    "type": "http",
     "endpoint": "https://api.yourcompany.com/customers/update",
     "method": "POST",
+    "body_format": "json",
     "timeout": 15,
     "headers": [
       {
@@ -89,21 +115,30 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
         "value": "application/json"
       }
     ],
+    "static_fields": [
+      {
+        "key": "source",
+        "value": "autocalls"
+      }
+    ],
     "schema": [
       {
         "name": "customer_name",
         "type": "string",
-        "description": "Full name of the customer"
+        "description": "Full name of the customer",
+        "required": true
       },
       {
-        "name": "customer_age",
-        "type": "number",
-        "description": "Age of the customer"
+        "name": "balance",
+        "type": "float",
+        "description": "Account balance as a decimal",
+        "required": false
       },
       {
         "name": "newsletter_subscription",
         "type": "boolean",
-        "description": "Whether customer wants to subscribe to newsletter"
+        "description": "Whether customer wants to subscribe to newsletter",
+        "required": false
       }
     ],
     "created_at": "2025-10-10T12:00:00.000000Z",
@@ -122,7 +157,7 @@ This endpoint allows you to update an existing mid call tool. All fields are opt
 {
   "message": "Validation failed",
   "errors": {
-    "name": ["Tool name must contain only lowercase letters and underscores, and start with a letter."]
+    "name": ["Tool name must start with a letter or underscore and contain only letters, numbers, and underscores (max 64 characters)."]
   }
 }
 ```

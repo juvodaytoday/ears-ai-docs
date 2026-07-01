@@ -1,0 +1,280 @@
+---
+title: "Telnyx Integration"
+description: "A step by step guide to connect your Telnyx phone numbers via SIP trunking"
+---
+
+This guide walks you through connecting your Telnyx phone numbers using SIP trunking. You'll create an FQDN connection in Telnyx, configure outbound authentication, assign your numbers, and import them into the platform.
+
+<Tip>
+**One-time setup:** You only need to create the SIP connection once (Steps 1–5). For each additional phone number after that, you simply assign it to your existing connection (Step 5) and import it (Step 7).
+</Tip>
+
+<Info>
+**Why FQDN?** The connection type must be **FQDN** — not Credentials or IP Address. Credential connections require SIP REGISTER for inbound calls, which our platform doesn't send. FQDN connections route inbound calls directly to our SIP server and authenticate outbound calls via credentials.
+</Info>
+
+## Step 1: Create SIP Connection
+
+1. Log in to the [Telnyx Mission Control Portal](https://portal.telnyx.com)
+2. Navigate to **Real-Time Communications** → **Voice** → **SIP Trunking**
+3. Click **Create SIP Connection**
+4. **Name**: Choose a name (e.g., `my-company SIP trunk`)
+5. **Type**: Select **FQDN**
+6. Click **Create** — this opens the setup wizard
+
+   <Frame>
+     <img
+       src="/resources/telnyx-create-connection.png"
+       alt="Create SIP Connection in Telnyx"
+     />
+   </Frame>
+
+## Step 2: Authentication and Routing
+
+The wizard takes you to the **Authentication and routing** step. Here you'll add the FQDN for inbound call routing and set up outbound credentials.
+
+### Add FQDN
+
+1. Click **"+ Add FQDN"** and enter:
+   - **DNS Record Type**: `A`
+   - **FQDN**: `5wed79aeavr.sip.livekit.cloud`
+   - **Port**: `5060`
+2. Click **Save**
+
+   <Frame>
+     <img
+       src="/resources/telnyx-add-fqdn.png"
+       alt="Add FQDN to Telnyx connection"
+     />
+   </Frame>
+
+### Inbound Calls Routing
+
+Scroll down to the **Inbound calls routing** section on the same page:
+
+1. **SIP subdomain**: Enter a name (e.g., `yourcompany`) — this creates `yourcompany.sip.telnyx.com`
+2. **Receive SIP Subdomain calls**: Set to **From Anyone**
+3. **Primary FQDN**: Select `5wed79aeavr.sip.livekit.cloud` from the dropdown
+
+   <Frame>
+     <img
+       src="/resources/telnyx-inbound-routing.png"
+       alt="Configure inbound calls routing"
+     />
+   </Frame>
+
+### Outbound Authentication
+
+Scroll down further to the **Outbound calls authentication** section:
+
+1. **Method**: Select **Credentials**
+2. Set a **username** and **password** — save these, you'll need them when importing the number into the platform
+
+   <Frame>
+     <img
+       src="/resources/telnyx-outbound-credentials.png"
+       alt="Set outbound credentials"
+     />
+   </Frame>
+
+Click **Next** at the bottom of the page.
+
+## Step 3: Configuration
+
+The wizard shows the **Configuration** page with connection details, webhooks, and advanced settings.
+
+You don't need to change anything here — just verify that the **Type** shows **FQDN Connection** and click **Next**.
+
+   <Frame>
+     <img
+       src="/resources/telnyx-configuration.png"
+       alt="Configuration page"
+     />
+   </Frame>
+
+## Step 4: Inbound and Outbound
+
+The wizard will go through the **Inbound** and **Outbound** steps. Since you already configured these in Step 2, verify the settings are correct and click **Next** on each.
+
+On the **Outbound** page, make sure:
+1. **Outbound voice profile**: Select your profile (or "Default")
+2. **Localization country**: Select your country
+3. **Channel limit**: Set to `10` or higher
+
+   <Frame>
+     <img
+       src="/resources/telnyx-outbound-settings.png"
+       alt="Configure outbound settings"
+     />
+   </Frame>
+
+<Note>
+If you don't have an Outbound Voice Profile, go to **Voice** → **Settings** → **Outbound Voice Profiles** → **Create Profile**. Make sure to enable the countries you want to call under **Allowed Destinations**.
+</Note>
+
+## Step 5: Assign Numbers
+
+The last step of the wizard is the **Numbers** page:
+
+1. Click **Assign numbers**
+2. Select the phone number(s) you want to use
+
+## Step 6: Enable Geographic Permissions
+
+1. Go to **Voice** → **Settings** → **Outbound Voice Profiles**
+2. Click on edit
+
+   <Frame>
+     <img
+       src="/resources/telnyx-outbound-voice-profiles.png"
+       alt="Enable geographic permissions"
+     />
+   </Frame>
+
+2. Click on your profile → **Allowed Destinations**
+3. Enable the countries/regions you need to call
+
+   <Frame>
+     <img
+       src="/resources/telnyx-geographic-permissions.png"
+       alt="Enable geographic permissions"
+     />
+   </Frame>
+
+<Warning>
+If you skip this step, outbound calls will fail with a `403` error: **"Dialed number is not included in whitelisted countries."**
+</Warning>
+
+## Step 7: Import Number to the Platform
+
+1. Go directly to the Phone Numbers page in your dashboard:
+
+   **[https://ai.earsconnect.com/phone-numbers](https://ai.earsconnect.com/phone-numbers)**
+
+   If it takes you to the login page, log in first — it will automatically redirect you to the Phone Numbers page.
+
+2. Click **"Integrate SIP trunk"** (top-right corner of the page)
+
+   <Frame>
+     <img
+       src="/resources/telnyx-autocalls-sip-button.png"
+       alt="Import number via SIP trunk"
+     />
+   </Frame>
+
+3. Fill in your phone number and SIP credentials:
+
+   ```
+   Phone number: Your Telnyx number (e.g., +1 555 0123)
+   Username: The outbound username from Step 2
+   Password: The outbound password from Step 2
+   ```
+
+4. Enter the outbound settings:
+
+   ```
+   SIP address: sip.telnyx.com
+   Outbound format: International (with + in front)
+   ```
+
+   <Frame>
+     <img
+       src="/resources/telnyx-autocalls-outbound.png"
+       alt="Configure outbound settings in EARS AI.
+     />
+   </Frame>
+
+<Warning>
+**SIP address must be `sip.telnyx.com`** — do NOT use your SIP subdomain (e.g., `yourcompany.sip.telnyx.com`). The subdomain is only for inbound routing on the Telnyx side. Using it as the outbound SIP address will result in `404 Not Found` errors.
+</Warning>
+
+5. Select **Authorization type**: **IP Address** and add the Telnyx IP addresses for your region:
+
+   - **US**: `192.76.120.10`
+   - **Europe**: `185.246.41.140` and `185.246.41.141`
+   - **Australia**: `103.115.244.145` and `103.115.244.146`
+
+   <Frame>
+     <img
+       src="/resources/telnyx-autocalls-inbound.png"
+       alt="Configure inbound IP addresses"
+     />
+   </Frame>
+
+<Note>
+You can add all IP addresses regardless of region — only the relevant ones will be used.
+</Note>
+
+6. Select the **country** where your SIP trunk is located.
+
+   <Frame>
+     <img
+       src="/resources/did-logic/sip-integration-country.png"
+       alt="SIP Country selection"
+     />
+   </Frame>
+
+## Step 8: Verify Setup
+
+To test your Telnyx number, you need to assign it to AI assistants. Inbound and outbound require **separate assistants**:
+
+### Test Inbound
+
+1. Go to **AI Assistants** → create a new assistant (or use an existing one)
+2. Set the assistant type to **Receive phone calls**
+3. Assign your Telnyx phone number to the assistant
+4. Call your Telnyx number from any phone — the AI assistant should answer
+
+### Test Outbound
+
+1. Create a **second assistant** with type **Make phone calls**
+2. Assign the same Telnyx phone number to this assistant
+3. Click **Speak to assistant** → **Phone call** — the platform will call your personal phone using the Telnyx number
+
+<Warning>
+A single assistant cannot handle both directions. You need one **Receive phone calls** assistant and one **Make phone calls** assistant, both with the same phone number assigned.
+</Warning>
+
+## Security Requirements
+
+Your SIP credentials need to be secure:
+
+- **Username**: Your provider-supplied username
+- **Password must have**:
+  - 12 or more characters
+  - Numbers
+  - Upper and lowercase letters
+  - Special characters recommended
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Dialed number is not included in whitelisted countries">
+    Go to **Voice** → **Settings** → **Outbound Voice Profiles** → your profile → **Allowed Destinations** and enable the destination country you're trying to call.
+  </Accordion>
+
+  <Accordion title="Inbound calls not working or 'number is incorrect'">
+    - Make sure the connection type is **FQDN** (not Credentials or IP Address)
+    - Verify the FQDN is set to `5wed79aeavr.sip.livekit.cloud` on port `5060`
+    - Check that the phone number is assigned to the FQDN connection (not another connection)
+  </Accordion>
+
+  <Accordion title="Outbound calls not connecting">
+    - Verify the SIP address is `sip.telnyx.com` (not your SIP subdomain)
+    - Check that credentials match between Telnyx and the platform
+    - Make sure an **Outbound Voice Profile** is attached to the connection
+    - Verify the **Localization country** is set correctly
+  </Accordion>
+
+  <Accordion title="Why can't I use Credentials connection type?">
+    Credential connections require SIP REGISTER for inbound calls. Our platform uses direct SIP routing (no registration), so FQDN connection type is required. FQDN still supports credential-based authentication for outbound calls.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+<Note>
+  Need help setting up? Our support team specializes in helping customers
+  integrate their phone systems. We'll guide you through the entire process,
+  ensuring a smooth setup with your specific phone system configuration.
+</Note>
