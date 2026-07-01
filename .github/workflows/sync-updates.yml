@@ -19,6 +19,7 @@ jobs:
     if: ${{ inputs.confirm == 'update' }}
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -319,8 +320,10 @@ jobs:
           find . -type f \( -name "*.mdx" -o -name "*.md" \) ! -path "./.git/*" -exec sed -i 's/"Autocalls"/"${{ steps.brand.outputs.name }}"/g' {} \;
           find . -type f \( -name "*.mdx" -o -name "*.md" \) ! -path "./.git/*" -exec sed -i "s/'Autocalls'/'${{ steps.brand.outputs.name }}'/g" {} \;
 
-      # Commit synced and rebranded docs
-      - name: Commit synced docs
+      # Commit synced and rebranded docs to a new branch and open a Pull Request
+      - name: Commit synced docs and open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -328,8 +331,14 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Sync docs from upstream - $(date +%Y-%m-%d)" || echo "Nothing to commit"
-            git fetch origin main
-            git rebase origin/main
-            git push origin HEAD:main
+            BRANCH="sync/upstream-$(date +%Y-%m-%d-%H%M%S)"
+            git checkout -b "$BRANCH"
+            git commit -m "Sync docs from upstream - $(date +%Y-%m-%d)"
+            git push origin "$BRANCH"
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "Sync docs from upstream - $(date +%Y-%m-%d)" \
+              --body "Automated sync from upstream (${{ inputs.upstream_repo }}). The validate-refs check runs on this PR. Review the changes, wait for the check to pass, then merge to publish." \
+              || echo "Could not auto-create PR. Open one manually from branch $BRANCH into main."
           fi
