@@ -282,32 +282,37 @@ jobs:
           replace: "${{ steps.brand.outputs.primary_color }}"
           include: "**/*.json"
 
-      # Re-apply file renames
-      - name: Rename what-is-autocalls page
+      # Reliable catch-all cleanup (the gha-find-replace steps above intermittently
+      # miss the theme colors and some URLs; sed is deterministic across all files).
+      - name: Reliable brand cleanup (colors, URLs, email)
+        env:
+          NAME: ${{ steps.brand.outputs.name }}
+          PRIMARY: ${{ steps.brand.outputs.primary_color }}
+          DASH: ${{ steps.brand.outputs.dashboard_url }}
+          WEB: ${{ steps.brand.outputs.website_url }}
+          SUP: ${{ steps.brand.outputs.support_url }}
         run: |
-          if [ -f "introduction/what-is-autocalls.mdx" ]; then
-            mv introduction/what-is-autocalls.mdx introduction/what-is-platform.mdx
-          fi
-
-      - name: Update navigation for renamed what-is-autocalls
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "introduction/what-is-autocalls"
-          replace: "introduction/what-is-platform"
-          include: "**/*.{json,mdx}"
-
-      - name: Rename autocalls-tool page
-        run: |
-          if [ -f "automation-platform/calls-related/autocalls-tool.mdx" ]; then
-            mv automation-platform/calls-related/autocalls-tool.mdx automation-platform/calls-related/platform-tool.mdx
-          fi
-
-      - name: Update navigation for renamed autocalls-tool
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "automation-platform/calls-related/autocalls-tool"
-          replace: "automation-platform/calls-related/platform-tool"
-          include: "**/*.{json,mdx}"
+          # Normalize a trailing slash off the website URL so links don't become "domain//path"
+          WEB_NS="${WEB%/}"
+          # Bare hostnames for display text and mailto addresses
+          DASH_HOST="$(printf '%s' "$DASH" | sed -E 's#^https?://##; s#/$##')"
+          WEB_HOST="$(printf '%s' "$WEB_NS" | sed -E 's#^https?://##')"
+          find . -type f \( -name '*.mdx' -o -name '*.md' -o -name '*.json' \) ! -path './.git/*' -print0 |
+          while IFS= read -r -d '' f; do
+            # Theme colors (Autocalls greens -> brand primary)
+            sed -i "s/#06df4b/${PRIMARY}/gI; s/#65fe50/${PRIMARY}/gI; s/#01df4a/${PRIMARY}/gI" "$f"
+            # Full URLs, most specific first
+            sed -i "s#https://app.autocalls.ai#${DASH}#g" "$f"
+            sed -i "s#https://autocalls.ai/contact#${SUP}#g" "$f"
+            sed -i "s#https://recordings.autocalls.ai#${DASH}/recordings#g" "$f"
+            sed -i "s#https://automation.autocalls.ai#${DASH}/automation#g" "$f"
+            sed -i "s#https://automate.autocalls.ai#${DASH}/automate#g" "$f"
+            sed -i "s#https://api.autocalls.ai#${DASH}#g" "$f"
+            sed -i "s#https://autocalls.ai#${WEB_NS}#g" "$f"
+            # Remaining bare vendor-domain references: display link text and mailto addresses
+            sed -i "s#app.autocalls.ai#${DASH_HOST}#g" "$f"
+            sed -i "s#autocalls.ai#${WEB_HOST}#g" "$f"
+          done
 
       # Final comprehensive text replacements using sed
       - name: Final cleanup - replace remaining Autocalls text
