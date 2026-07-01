@@ -1,0 +1,102 @@
+---
+title: "List SIP trunks"
+api: "GET /user/phone-numbers/sip-trunks"
+description: "Get all SIP trunks owned by the authenticated user"
+---
+
+This endpoint returns a list of all SIP trunks associated with your account.
+
+### Response
+
+<ResponseField name="data" type="array">
+  Array of SIP trunk objects
+
+  <Expandable title="SIP trunk properties">
+    <ResponseField name="id" type="integer">
+      The unique identifier of the SIP trunk
+    </ResponseField>
+
+    <ResponseField name="phone_number" type="string">
+      The SIP extension or phone number (DID) in E.164 format
+    </ResponseField>
+
+    <ResponseField name="nickname" type="string">
+      A short, human-friendly label for the trunk (or `null` if not set)
+    </ResponseField>
+
+    <ResponseField name="sip_username" type="string">
+      The username used for SIP authentication
+    </ResponseField>
+
+    <ResponseField name="sip_address" type="string">
+      The SIP server address
+    </ResponseField>
+
+    <ResponseField name="sip_calling_format" type="string">
+      The outbound calling number format: `+e164`, `e164`, or `national`
+    </ResponseField>
+
+    <ResponseField name="inbound_authorization_type" type="string">
+      The inbound authorization method: `auth` (username/password) or `ip` (IP whitelist)
+    </ResponseField>
+
+    <ResponseField name="allowed_inbound_ips" type="array">
+      Array of whitelisted IP addresses for inbound calls (only when `inbound_authorization_type` is `ip`)
+    </ResponseField>
+
+    <ResponseField name="outbound_proxy" type="boolean">
+      Whether outbound calls use a fixed proxy IP address
+    </ResponseField>
+
+    <ResponseField name="country_code" type="string">
+      The ISO 3166-2 country code where the SIP trunk is located
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp of when the SIP trunk was created
+    </ResponseField>
+
+    <ResponseField name="updated_at" type="string">
+      ISO 8601 timestamp of when the SIP trunk was last updated
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "data": [
+    {
+      "id": 42,
+      "phone_number": "1000",
+      "nickname": "Provider X — Main",
+      "sip_username": "myuser",
+      "sip_address": "sip.provider.com",
+      "sip_calling_format": "+e164",
+      "inbound_authorization_type": "auth",
+      "allowed_inbound_ips": null,
+      "outbound_proxy": false,
+      "country_code": "US",
+      "created_at": "2026-03-31T10:00:00.000000Z",
+      "updated_at": "2026-03-31T10:00:00.000000Z"
+    },
+    {
+      "id": 43,
+      "phone_number": "+14155551234",
+      "nickname": null,
+      "sip_username": "trunk_user",
+      "sip_address": "sip.provider.com",
+      "sip_calling_format": "e164",
+      "inbound_authorization_type": "ip",
+      "allowed_inbound_ips": ["203.0.113.10", "198.51.100.20"],
+      "outbound_proxy": true,
+      "country_code": "US",
+      "created_at": "2026-03-31T11:00:00.000000Z",
+      "updated_at": "2026-03-31T11:00:00.000000Z"
+    }
+  ]
+}
+```
+
+</ResponseExample>

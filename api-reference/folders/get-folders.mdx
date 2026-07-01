@@ -1,0 +1,46 @@
+---
+title: "List folders"
+api: "GET /user/folders"
+description: "List the folders in your account"
+---
+
+Folders let you group assistants (for example, by client or brand). Each assistant can belong to a single folder. Folders are private to your account.
+
+This endpoint returns your folders (paginated), each with the number of assistants it contains.
+
+### Query Parameters
+
+<ParamField query="per_page" type="integer">
+  Number of folders per page (1-100, default: 15)
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number (default: 1)
+</ParamField>
+
+### Response fields
+
+<ResponseField name="data" type="array">
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">The unique identifier of the folder</ResponseField>
+    <ResponseField name="name" type="string">The folder name</ResponseField>
+    <ResponseField name="color" type="string">The folder color (or `null`)</ResponseField>
+    <ResponseField name="assistants_count" type="integer">Number of assistants in this folder</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{
+  "data": [
+    { "id": 12, "name": "Acme Corp", "color": "blue", "assistants_count": 4 },
+    { "id": 18, "name": "Globex", "color": "teal", "assistants_count": 0 }
+  ],
+  "current_page": 1,
+  "per_page": 15,
+  "total": 2
+}
+```
+
+</ResponseExample>

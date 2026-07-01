@@ -1,0 +1,208 @@
+---
+title: "MCP Servers"
+icon: "share-nodes"
+description: "Connect remote Model Context Protocol (MCP) servers so your AI assistant can use external tools during voice and chat conversations"
+---
+
+<Note>
+  MCP servers let your AI assistant pull live data and trigger actions in
+  external systems — like HubSpot, your internal APIs, or knowledge tools —
+  right in the middle of a conversation. Connect a server once, assign it to any
+  assistant, and its tools become available to the AI automatically.
+</Note>
+
+## What is an MCP server?
+
+The [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open
+standard for exposing tools to AI models. An **MCP server** is simply a remote
+HTTP endpoint that speaks this protocol. You don't install anything — you paste
+the server's URL (and optional authentication headers), and the assistant can
+call its tools while talking to your customer.
+
+<Card title="Why use MCP servers?" icon="bolt">
+  - Add whole toolsets (e.g. a HubSpot or Notion integration) in one step instead of building tools one by one
+  - Tools, descriptions and parameters are discovered automatically from the server
+  - Works across voice calls, the web widget, and chat
+  - Reuse one server across many assistants
+</Card>
+
+## Mid-call tools vs. MCP servers
+
+Both live under the **Tools** page. Use whichever fits:
+
+<CardGroup cols={2}>
+  <Card title="Mid-call tools" icon="plug">
+    A single custom HTTP endpoint you define by hand (URL, method, parameters).
+    Best for one-off calls to your own API. See [Custom Mid-Call Tools](/ai-assistants/custom-tools).
+  </Card>
+  <Card title="MCP servers" icon="share-nodes">
+    A remote server that exposes **many** tools at once, discovered
+    automatically. Best for connecting to a platform or a shared integration.
+  </Card>
+</CardGroup>
+
+## Connecting a server
+
+<Frame>
+  <img src="/resources/mcp-server-form.png" alt="MCP server configuration form" />
+</Frame>
+
+<Steps>
+  <Step title="Open the Tools page">
+    Go to **Tools** in the sidebar and switch to the **MCP servers** tab, then click **New MCP server**.
+  </Step>
+
+  <Step title="Fill in the details">
+    - **Display name**: a friendly name shown when assigning the server (e.g. `HubSpot CRM`)
+    - **Identifier**: an internal id, lowercase letters and underscores only (e.g. `hubspot`)
+    - **Description**: optional, for your own reference
+    - **Server URL**: the remote MCP endpoint
+    - **Timeout**: how long to wait when connecting to the server
+  </Step>
+
+  <Step title="Choose the transport">
+    Leave this on **Auto-detect** unless you know otherwise. Auto-detect picks the
+    right transport from the URL:
+
+    ```yaml
+    URL ends with /mcp  →  Streamable HTTP
+    URL ends with /sse  →  SSE (Server-Sent Events)
+    ```
+  </Step>
+
+  <Step title="Add authentication headers (optional)">
+    If the server requires a token, add it as a header. Headers are **stored encrypted**.
+
+    ```yaml
+    Authorization: Bearer your_token_here
+    ```
+  </Step>
+</Steps>
+
+When you save, the server is tested automatically and a notification lists the
+tools it exposes.
+
+### Try it for free
+
+<Tip>
+  Want to test MCP without any setup? Connect the public **DeepWiki** server (no
+  authentication required):
+
+  - **Display name**: `DeepWiki`
+  - **Identifier**: `deepwiki`
+  - **Server URL**: `https://mcp.deepwiki.com/mcp`
+
+  Then ask your assistant something like *"Use DeepWiki to summarize the
+  facebook/react repository."*
+</Tip>
+
+## Connection status & discovered tools
+
+Each server is shown as a card with a live connection status.
+
+<Frame>
+  <img src="/resources/mcp-servers-list.png" alt="MCP servers list with connection status and discovered tools" />
+</Frame>
+
+<CardGroup cols={3}>
+  <Card title="Connected" icon="circle-check">
+    The server is reachable. Its available tools are listed on the card.
+  </Card>
+  <Card title="Disconnected" icon="circle-exclamation">
+    The server couldn't be reached. The error is shown so you can fix the URL or headers.
+  </Card>
+  <Card title="Not tested" icon="circle-question">
+    The server hasn't been checked yet.
+  </Card>
+</CardGroup>
+
+Use **Test connection** at any time to re-check a server and refresh its tool list.
+
+## Choosing which tools are exposed
+
+By default, **all** of a server's tools are available to your assistants. Open
+**Manage tools** (on the server's edit page) to view each tool's description and
+parameters, and enable or disable individual tools.
+
+<Frame>
+  <img src="/resources/mcp-manage-tools.png" alt="Manage tools panel showing tool descriptions, parameters and enable/disable toggles" />
+</Frame>
+
+<Info>
+  Disabled tools are hidden from the AI. To expose **no** tools at all, simply
+  remove the server from the assistant instead.
+</Info>
+
+## Assigning a server to an assistant
+
+<Steps>
+  <Step title="Open your assistant">
+    Edit an assistant and go to the **Prompt & Tools** step.
+  </Step>
+  <Step title="Assign MCP servers">
+    In the **MCP servers** section, select one or more servers. The list shows
+    each server's connection status and tool count.
+  </Step>
+  <Step title="Save">
+    The assistant can now use the server's enabled tools during voice calls, the
+    web widget, and chat.
+  </Step>
+</Steps>
+
+## Authentication
+
+The integration sends **static headers** with each request. It does not perform
+an interactive OAuth login.
+
+| Server authentication | Supported | How |
+| --- | --- | --- |
+| No authentication | ✅ | Nothing to configure |
+| API key / token | ✅ | Add an `Authorization` (or custom) header |
+| Token embedded in the URL (e.g. Zapier, Composio) | ✅ | Paste the full URL |
+| Interactive OAuth login | ❌ | Use a personal access token in a header instead |
+
+## Real-world examples
+
+<AccordionGroup>
+  <Accordion title="Documentation lookup (DeepWiki)" icon="book">
+    ```yaml
+    Display name: DeepWiki
+    Identifier: deepwiki
+    Server URL: https://mcp.deepwiki.com/mcp
+    Headers: (none)
+    Tools: read_wiki_structure, read_wiki_contents, ask_question
+    ```
+
+    The assistant can answer questions about any public GitHub repository.
+  </Accordion>
+
+  <Accordion title="CRM access (HubSpot-style)" icon="address-book">
+    ```yaml
+    Display name: HubSpot CRM
+    Identifier: hubspot
+    Server URL: https://your-mcp-host.example.com/mcp
+    Headers:
+      Authorization: Bearer pat-xxxxxxxx
+    ```
+
+    The assistant can look up contacts, create deals, or update records during a call.
+  </Accordion>
+</AccordionGroup>
+
+## Best practices & security
+
+<Warning>
+  Only connect MCP servers you trust. The tools and the data they return are
+  provided by the remote server and are passed to the AI during live
+  conversations.
+</Warning>
+
+- Keep tokens scoped to the minimum permissions the assistant needs.
+- Use **Manage tools** to expose only the tools an assistant actually requires.
+- Give each tool a clear name and description on the server so the AI knows when to use it.
+- Mention the available capabilities in your assistant's [system prompt](/ai-assistants/system-prompt) so it uses them at the right moments.
+
+<Tip>
+  Test with simple conversations first and confirm the assistant calls the right
+  tool with the right parameters before going live.
+</Tip>

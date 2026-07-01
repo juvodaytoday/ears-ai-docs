@@ -1,0 +1,102 @@
+---
+title: "Enable AI"
+api: "POST /automate/conversations/{uuid}/enable-ai"
+description: "Re-enable AI replies for a conversation after a human takeover"
+---
+
+Re-enables AI responses for a conversation that was previously disabled via the [Disable AI](/api-reference/conversations/disable-ai) endpoint. The assistant will resume responding to new messages from this point forward.
+
+### Authentication
+
+This endpoint requires your **Automate API key** as a Bearer token.
+
+### Path Parameters
+
+<ParamField path="uuid" type="string" required>
+  The unique UUID identifier of the conversation
+</ParamField>
+
+### Response Fields
+
+<ResponseField name="status" type="boolean">
+  `true` when the operation was successful
+</ResponseField>
+
+<ResponseField name="ai_enabled" type="boolean">
+  Will always be `true` on success
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="status" type="boolean">
+  `false` when an error occurs
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message. Possible values:
+  - `Conversation not found` — the UUID does not exist or belongs to a different account
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://ai.earsconnect.com/api/automate/conversations/7c9e6679-7425-40de-944b-e07fc1f90ae7/enable-ai" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const conversationId = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+
+const response = await fetch(
+  `https://ai.earsconnect.com/api/automate/conversations/${conversationId}/enable-ai`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+    },
+  }
+);
+
+const data = await response.json();
+console.log(data.ai_enabled); // true
+```
+
+```python Python
+import requests
+
+conversation_id = '7c9e6679-7425-40de-944b-e07fc1f90ae7'
+
+response = requests.post(
+    f'https://ai.earsconnect.com/api/automate/conversations/{conversation_id}/enable-ai',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'}
+)
+
+data = response.json()
+print(data['ai_enabled'])  # True
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "status": true,
+  "ai_enabled": true
+}
+```
+
+```json 404 Not Found
+{
+  "status": false,
+  "error": "Conversation not found"
+}
+```
+
+```json 401 Unauthorized
+{
+  "error": "Unauthorized"
+}
+```
+
+</ResponseExample>

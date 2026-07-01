@@ -1,0 +1,25 @@
+---
+title: "Delete folder"
+api: "DELETE /user/folder/{id}"
+description: "Delete a folder"
+---
+
+Delete a folder. Assistants that were in the folder are **not** deleted — they simply become uncategorized.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The folder ID. Must belong to your account.
+</ParamField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{ "message": "Folder deleted successfully" }
+```
+
+```json 404 Not Found
+{ "message": "Folder not found" }
+```
+
+</ResponseExample>

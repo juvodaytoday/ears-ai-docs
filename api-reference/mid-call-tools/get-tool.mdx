@@ -33,11 +33,15 @@ This endpoint allows you to retrieve detailed information about a specific mid c
 </ResponseField>
 
 <ResponseField name="name" type="string">
-  The name of the tool (lowercase with underscores)
+  The name of the tool
 </ResponseField>
 
 <ResponseField name="description" type="string">
   Detailed explanation of when and how the AI should use this tool
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  Tool type: `http` or `automation`
 </ResponseField>
 
 <ResponseField name="endpoint" type="string">
@@ -46,6 +50,10 @@ This endpoint allows you to retrieve detailed information about a specific mid c
 
 <ResponseField name="method" type="string">
   HTTP method (GET, POST, PUT, PATCH, DELETE)
+</ResponseField>
+
+<ResponseField name="body_format" type="string">
+  Request body encoding: `json` or `form`
 </ResponseField>
 
 <ResponseField name="timeout" type="integer">
@@ -64,6 +72,18 @@ This endpoint allows you to retrieve detailed information about a specific mid c
   </Expandable>
 </ResponseField>
 
+<ResponseField name="static_fields" type="array">
+  Fixed key/value pairs always sent with the request
+  <Expandable title="static_fields properties">
+    <ResponseField name="key" type="string">
+      Field key
+    </ResponseField>
+    <ResponseField name="value" type="string">
+      Field value
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
 <ResponseField name="schema" type="array">
   Parameters that the AI will extract and send to the endpoint
   <Expandable title="schema properties">
@@ -71,10 +91,13 @@ This endpoint allows you to retrieve detailed information about a specific mid c
       Parameter name
     </ResponseField>
     <ResponseField name="type" type="string">
-      Parameter type (string, number, boolean)
+      Parameter type (string, number, float, boolean)
     </ResponseField>
     <ResponseField name="description" type="string">
       Description to help AI understand how to extract this parameter
+    </ResponseField>
+    <ResponseField name="required" type="boolean">
+      Whether the AI must collect this parameter
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -94,8 +117,10 @@ This endpoint allows you to retrieve detailed information about a specific mid c
   "id": 1,
   "name": "get_weather",
   "description": "Use this tool to get the current weather in a specific city. Call this when the customer asks about weather conditions.",
-  "endpoint": "https://api.openweathermap.org/data/2.5/weather",
+  "type": "http",
+  "endpoint": "https://api.openweathermap.org/data/2.5/weather?city={city}",
   "method": "GET",
+  "body_format": "json",
   "timeout": 10,
   "headers": [
     {
@@ -107,21 +132,24 @@ This endpoint allows you to retrieve detailed information about a specific mid c
       "value": "Bearer sk_..."
     }
   ],
+  "static_fields": [
+    {
+      "key": "source",
+      "value": "autocalls"
+    }
+  ],
   "schema": [
     {
       "name": "city",
       "type": "string",
-      "description": "The city name to get weather for"
+      "description": "The city name to get weather for",
+      "required": true
     },
     {
-      "name": "temperature",
+      "name": "days",
       "type": "number",
-      "description": "Current temperature value"
-    },
-    {
-      "name": "is_raining",
-      "type": "boolean",
-      "description": "Whether it is currently raining"
+      "description": "Number of forecast days",
+      "required": false
     }
   ],
   "created_at": "2025-10-10T12:00:00.000000Z",

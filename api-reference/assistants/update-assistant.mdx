@@ -96,6 +96,20 @@ This endpoint allows you to update an existing AI assistant's configuration. All
   - `prompt` - Knowledge is injected into prompt (pipeline only)
 </ParamField>
 
+#### Organization
+
+<ParamField body="folder_id" type="integer">
+  ID of a [folder](/api-reference/folders/create-folder) to move this assistant into. Must belong to your account. Set to `null` to make it uncategorized. Omit to leave the folder unchanged.
+</ParamField>
+
+<ParamField body="label_ids" type="integer[]">
+  Array of [label](/api-reference/labels/create-label) IDs for this assistant. Each label must belong to your account. When provided, this **replaces** the assistant's current labels. Omit to leave labels unchanged; send `[]` to remove all labels.
+
+  ```json
+  "label_ids": [3, 5]
+  ```
+</ParamField>
+
 #### Phone Number
 
 <ParamField body="phone_number_id" type="integer">
@@ -154,19 +168,34 @@ This endpoint allows you to update an existing AI assistant's configuration. All
     - `timeout`: Seconds to wait for input, 1-30 (default: 5)
     - `stop_key`: Key that ends input. Options: `#` (default), `*`
 
-    **calendar_integration** - Schedule appointments via Cal.com
+    **calendar_integration** - Schedule appointments via Cal.com or Calendly
+    - `calendar_type`: Calendar provider. Options: `calcom` (default), `calendly`
+    - `description`: When to offer scheduling
+
+    Cal.com fields (`calendar_type: "calcom"`):
     - `calcom_api_key` (required): Your Cal.com API key
     - `calcom_event_slug` (required): The event type slug from Cal.com
     - `calcom_team_slug`: Team slug if the event belongs to a Cal.com team
     - `calcom_endpoint`: Cal.com API region. Options: `us` (default — `https://api.cal.com`), `eu` (`https://api.cal.eu`), `custom` (uses `calcom_custom_endpoint`)
     - `calcom_custom_endpoint`: Custom Cal.com API base URL. Only used when `calcom_endpoint` is `custom` (e.g., `https://my-calcom-instance.com`).
+    - `calcom_event_id`: Cal.com event type ID. When provided, the event name is resolved from Cal.com automatically.
+    - `calcom_event_name`: Human-readable event name (e.g., `"30 Minute Meeting (30 min)"`). Resolved from Cal.com when `calcom_event_id` is provided, or set explicitly.
     - `calcom_booking_fields`: Array of custom booking fields for the event. Each field has:
       - `slug` (required): Field identifier
       - `type` (required): Field type (e.g., "text", "email", "phone", "select")
       - `label` (required): Display label
       - `required`: Whether the field is required (default: `false`)
       - `options`: Array of options for select fields
-    - `description`: When to offer scheduling
+
+    Calendly fields (`calendar_type: "calendly"`):
+    - `calendly_api_key` (required): Your Calendly Personal Access Token (PAT). Generate one from your Calendly account: **Integrations & apps → API & webhooks → Generate new token**.
+    - `calendly_event_type_uri` (required): Full Calendly event type URI (e.g., `"https://api.calendly.com/event_types/{uuid}"`). Must belong to the authenticated PAT's account.
+
+    **assistant_transfer** - Hand off the conversation to a different AI assistant mid-call (swaps voice, LLM, and STT to the target assistant)
+    - `assistant_id` (required): ID of the target assistant. Must belong to your account and cannot be the assistant being updated (no self-transfer).
+    - `description`: When to transfer (max 500 chars, default: "Transfer the conversation to this assistant when appropriate.")
+    - `message_before_transfer`: Optional message the AI speaks before switching to the target assistant (max 500 chars).
+    - `speak_transfer_greeting`: If `true`, the target assistant speaks its configured initial message after the transfer completes (default: `true`).
   </Expandable>
 
   ```json
@@ -193,6 +222,13 @@ This endpoint allows you to update an existing AI assistant's configuration. All
       "type": "collect_keypad",
       "timeout": 5,
       "stop_key": "#"
+    },
+    {
+      "type": "assistant_transfer",
+      "assistant_id": 14765,
+      "description": "Transfer to the Support Assistant when the customer needs technical help.",
+      "message_before_transfer": "Sure — let me transfer you to our support specialist.",
+      "speak_transfer_greeting": true
     },
     {
       "type": "end_call",
@@ -456,6 +492,41 @@ This endpoint allows you to update an existing AI assistant's configuration. All
 }
 ```
 
+### Add Calendar Integration (Cal.com)
+
+```json
+{
+  "tools": [
+    {
+      "type": "calendar_integration",
+      "calendar_type": "calcom",
+      "calcom_api_key": "cal_live_xxxxxxxxxxxx",
+      "calcom_event_slug": "30min",
+      "calcom_event_id": 123456,
+      "calcom_event_name": "30 Minute Meeting (30 min)",
+      "calcom_endpoint": "us",
+      "description": "Offer scheduling when the customer wants to book an appointment"
+    }
+  ]
+}
+```
+
+### Add Calendar Integration (Calendly)
+
+```json
+{
+  "tools": [
+    {
+      "type": "calendar_integration",
+      "calendar_type": "calendly",
+      "calendly_api_key": "eyJraWQiOiIxY...",
+      "calendly_event_type_uri": "https://api.calendly.com/event_types/AAAAAAAAAAAAAAAA",
+      "description": "Offer scheduling when the customer wants to book an appointment"
+    }
+  ]
+}
+```
+
 ### Remove Optional Settings
 
 ```json
@@ -523,6 +594,15 @@ This endpoint allows you to update an existing AI assistant's configuration. All
     "speech_speed": ["The speech speed must be between 0.7 and 1.2."],
     "voice_id": ["The selected voice is not compatible with the chosen engine type."],
     "allow_interruptions": ["Interruptions cannot be disabled in multimodal or dualplex mode."]
+  }
+}
+```
+
+```json 422 Invalid Calendly Event URI
+{
+  "message": "Validation failed",
+  "errors": {
+    "tools": ["The Calendly event type URI does not belong to this account."]
   }
 }
 ```

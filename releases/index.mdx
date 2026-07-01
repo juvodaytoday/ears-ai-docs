@@ -8,24 +8,181 @@ icon: "scroll"
 **Stay up to date** — Follow our latest product updates and improvements. We ship new features regularly to enhance your AI calling experience.
 </Note>
 
+<Update label="v1.8.0" description="Jun 23 2026">
+
+### 🚀 Build & Manage Your Assistants Right Inside ChatGPT & Claude
+
+<Frame>
+ <img
+ src="/resources/2dbSq3RpRy1G6x7Dw09pnnwoTbXCquqGCMPyiXvu.png"
+ alt="Image"
+ />
+</Frame>
+
+This is a big one. You can now connect your account to **ChatGPT** and **Claude** and run your whole AI calling setup just by chatting — no dashboards, no setup screens. Tell the AI what you want in plain language and it does the work for you, from start to finish.
+
+**What you can do once it's connected:**
+
+- **Build a new assistant from scratch** — Describe what you need ("an assistant that books appointments") and the AI creates it for you: it writes the prompt, picks a natural voice, sets a greeting, and even adds the tools the assistant needs, like checking a calendar and booking slots.
+- **Fix and improve an existing assistant** — Ask it to review an assistant's prompt and settings. It points out what's weak and applies the fixes for you.
+- **Analyze your calls** — "Look at my last call and tell me what went wrong." It reads the full transcript and the call evaluation, explains what to improve, then updates the assistant to match.
+- **Learn from your history** — Ask it to study your last 30 calls, spot patterns, and tune your assistant so it performs better next time.
+- **Launch calling campaigns** — It walks you through setting up an outbound campaign from your leads and starts it for you.
+- **Handle the day-to-day** — Manage phone numbers, leads, and knowledge bases, or send a message — all from the same chat.
+
+**🔗 How to connect it (about a minute):**
+
+- Open the new **Connect AI** button in your dashboard and copy your secure connection link.
+- In ChatGPT or Claude, go to the connectors settings and choose **Add custom connector**, then paste the link. A built-in, step-by-step guide with screenshots walks you through both apps.
+- Sign in to your account and approve. Your tools appear in the AI app, and you're connected.
+
+It's secure by design: the connection only works after **you** sign in and approve it with your own account, and every action runs with your existing permissions. Nothing happens that you haven't logged in for.
+
+**Try it:** open a fresh chat and type *"Create an appointment-booking assistant."* Within seconds the AI has built it, written the prompt, given it a voice and a greeting, wired up calendar booking, and offered to place a test call.
+
+### ⚡ Reliability &amp; Fixes
+
+- **Smoother call transfers** — More reliable transfers between assistants, including when an assistant hands off to book a meeting.
+- **Faster chat under load** — Increased capacity for handling chat conversations during busy periods.
+- **Independent dashboard tables** — Tables on the dashboard no longer interfere with each other when you page through them.
+
+</Update>
+
+<Update label="v1.7.11" description="Jun 16 2026">
+
+### 🔌 Connect External Tools with MCP, 🛠 Redesigned Mid Call Tools, ⚡ One-Click Automation Linking
+
+🔌 Connect External Tools to Your Assistant (MCP)
+
+<Frame>
+ <img
+ src="/resources/B5y3SNsKZQTzmSis5NGw4Sw84APhDcl8AnrA0rCQ.png"
+ alt="Image"
+ />
+</Frame>
+
+Your assistant can now plug into outside tools and live data through **MCP (Model Context Protocol)**, the open standard for connecting AI to external systems. Instead of building tools one at a time, you connect a whole toolset in a single step. Point your assistant at a compatible server (a CRM, your internal APIs, a knowledge tool) and it can look things up and take action **right in the middle of a conversation**, on voice calls, the web widget, and chat alike.
+
+- **Add a server in minutes, no code** — Paste the server address and (if needed) an authentication header. There's nothing to install and nothing to build
+- **Tools discovered automatically** — The moment you connect, every tool the server offers is detected and listed, with its description and parameters, so you can see exactly what your assistant can do
+- **Pick precisely what's exposed** — Turn individual tools on or off per server, so an assistant only gets the abilities you want it to have
+- **Connect once, reuse everywhere** — Assign one server to a single assistant or to many, and manage them all from a dedicated page
+- **Always know the status** — Each server shows a live "connected" indicator, lists its available tools, and gives a clear message (with a one-click re-test) if anything needs attention
+- **Secure by design** — Authentication tokens are stored encrypted, and you stay in control of which tools and permissions each assistant can reach
+
+Popular uses include connecting a CRM to look up contacts and create deals mid-call, querying your own systems for live order or account data, or wiring in a documentation tool so the assistant can answer detailed questions accurately.
+
+🛠 Redesigned Call Actions — Easier to Build, Easier to Understand
+
+<Frame>
+ <img
+ src="/resources/D6uXVsYu0ex5dwA44tQWTJWfv1oRWhc0HKJ8AvB4.png"
+ alt="Image"
+ />
+</Frame>
+
+The tools that let your assistant **do things during a conversation** (look up an order, send an SMS, book an appointment, check availability, submit a form) got a full redesign. The whole experience is now built so that anyone can set up a working action, even with no technical background and no coding.
+
+- **Visual flow card** — A new step-by-step layout shows exactly how an action works, from the information the assistant collects to the response it gets back, all in one clear view
+- **"How it works" guidance built in** — Plain-language explanations sit right next to each setting, so you always understand what an action does and when your assistant will reach for it
+- **System variables at your fingertips** — Drop in live details like the caller's phone number or the current date and time straight into your action, with a handy reference so you never have to guess the right name
+- **One home for everything** — Custom actions and connected MCP servers now live together on a single, redesigned Tools page that's far easier to work with
+
+⚡ Build Call Actions with No-Code Automations
+
+<Frame>
+ <img
+ src="/resources/e1wxOoK16SLbGDQawyP6P8EfsYqKsfj7yStx4FHa.png"
+ alt="Image"
+ />
+</Frame>
+
+This is the big one. You no longer need an API or a developer to give your assistant a custom action. When you create an action, you can now choose the **Automation Platform** option, and the platform builds the entire technical connection for you.
+
+- **The connection is created automatically** — Pick "Automation Platform" and a linked automation is generated and wired up for you instantly. The web address that connects it to your assistant is set and locked behind the scenes, so there are no IDs to copy, paste, or keep in sync
+- **Build the logic visually** — Open the linked automation and drag together whatever steps you need: look up a record, check a calendar, send a message, run several actions in a row. When you're done, you simply finish with a **"Return Response"** step to hand the result back to the assistant on the call
+- **Multi-step workflows made simple** — Anything that used to require custom code (chaining several systems together, transforming data, conditional logic) can now be assembled with no code at all
+- **Smart linking for existing automations** — If you paste in an automation you've already built, the platform recognizes the workflow on its own and pulls in its details automatically, so connecting it takes seconds
+
+The result: from "the assistant should be able to do X" to a working, live action in minutes, entirely point-and-click.
+
+### 🎙 Voice &amp; Call Reliability
+
+- **Cleaner call endings** — Fixed a case where the assistant could repeat itself or hesitate when wrapping up a call
+- **Voice picker polish** — Follow-up fixes to the new voice picker for smoother selecting
+
+</Update>
+
+<Update label="v1.7.10" description="Jun 7 2026">
+
+### 📁 Assistant Folders & Labels, New Voice Picker, WhatsApp Human Takeover
+
+### 🗂 Assistant Folders &amp; Labels — Organize Your Workspace
+If you manage more than a handful of assistants, finding the right one just got much easier. You can now organize assistants into **folders** and tag them with **color-coded labels**.
+
+- **Folder tabs** — The assistants list now shows tabs for each folder (plus an "All" view), with a searchable dropdown when you have many folders
+- **Labels for cross-cutting tags** — Each assistant can carry multiple labels (for example "Production", "Testing", "Client X"), shown as badges on the assistant cards and filterable from the list
+- **Bulk actions** — Select multiple assistants and move them to a folder or add/remove labels in one go
+- **Create on the fly** — New folders and labels can be created right from the assistants page, no detour through settings
+- **Full API support** — Folders and labels can be managed via the API, and assistants can be assigned on create or update
+
+### 🎙 New Voice Picker — Find the Perfect Voice in Seconds
+The voice dropdown is gone. Choosing a voice now opens a **full picker** built for browsing hundreds of options without scrolling through an endless list.
+
+- **Filter by gender, age, and accent** — Narrow the catalog to exactly the kind of voice you're looking for, with free-text search on top
+- **Provider tabs** — Voices are grouped by speech engine, and each card shows a provider badge so you always know what you're selecting
+- **Language-aware** — The picker follows your assistant's language and warns you before selecting a voice that doesn't support it
+- **Clone voices in place** — The voice cloning option now lives inside the picker, and deleting a cloned voice uses a proper styled confirmation
+- **Smarter syncing** — Selecting a voice automatically sets the matching speech engine on the assistant, so there's nothing to configure twice
+
+### 🏷 Phone Number Nicknames
+Phone numbers can now have a **nickname and a color**, so "the support line" stops being "+1 555 0182 …which one was that again?"
+
+- **Visible everywhere** — Nicknames show up in the phone numbers list, assistant cards, call details, SMS history, and every place you select a number (assistant setup, warm transfers, campaign pools)
+- **Searchable selectors** — Find a number by its nickname or by the number itself
+- **API support** — Nicknames are included in all phone number responses and can be set via the API, including for SIP trunks
+
+### 🤝 WhatsApp Coexistence — Automatic Human Takeover
+Coexistence mode gets its biggest quality-of-life upgrade yet: when someone on your team replies to a customer **directly from the WhatsApp Business app**, the AI now detects it and **automatically steps aside** for that conversation.
+
+- **No more talking over each other** — The moment a human takes over from the phone, the AI stops responding in that chat
+- **Clear audit trail** — A system note appears in the conversation explaining why the AI paused, so everyone knows what happened
+- **Voice notes &amp; images fixed** — Audio messages and images from customers now come through reliably in Coexistence mode
+- **No charges for synced history** — When you connect an existing WhatsApp account, old conversations that stream in during setup are never billed
+
+### 🔔 Webhook &amp; Integration Upgrades
+The **conversation ended webhook** got a major upgrade for anyone building automations on top of chat conversations.
+
+- **Media attachments included** — Images, audio, and files exchanged in the conversation are now part of the webhook payload
+- **Conversation ID &amp; timestamps** — The payload now carries the conversation ID and per-message timestamps (human-readable and unix), so transcripts can be reconstructed precisely
+- **Re-send with one click** — Every conversation now has a "Re-send webhook" action, and the delivery result (status and response) is stored so you can see exactly what your endpoint received
+- **Bulk actions** — Re-evaluate or re-send webhooks for many conversations at once, straight from the conversations list
+
+### 🛠 Other Improvements &amp; Fixes
+
+- **No more technical data read out loud** — In rare cases the AI could speak fragments of raw technical output mid-call when using tools; this is now stripped from both speech and transcripts
+- **Day separators in conversations** — Long chat histories now show date dividers, making it much easier to scan past conversations
+- **Chat widget button fix** — The small launcher button no longer appears clipped on some sites
+- **Webhook reliability** — Fixed a timing issue that could cause the conversation ended webhook to silently skip for some WhatsApp chats
+- **Template sender display** — WhatsApp templates now show their sender more clearly in the templates list
+
+</Update>
+
 <Update label="v1.7.9" description="May 22 2026">
 
 ### 👥 WhatsApp Coexistence, Smart Message Buffering, Engine upgrades
 
-### 💬 WhatsApp Coexistence: Keep Using the WhatsApp Business App
-
-You can now connect a WhatsApp sender in **Coexistence mode**, which lets your team keep using the official WhatsApp Business app on their phones at the same time as the AI assistant. No need to migrate your existing chats, contacts, or labels: everything stays where it is, and the AI handles new conversations in parallel.
+### 💬 WhatsApp Coexistence — Keep Using the WhatsApp Business App
+You can now connect a WhatsApp sender in **Coexistence mode**, which lets your team keep using the official WhatsApp Business app on their phones at the same time as the AI assistant. No need to migrate your existing chats, contacts, or labels — everything stays where it is, and the AI handles new conversations in parallel.
 
 This is a game-changer for businesses that already have an active WhatsApp Business setup and don't want to disrupt how their team works today.
 
 ### ⏱ Smart Message Buffering for WhatsApp
-
-Real customers don't send one perfectly composed message: they send three quick texts, an image, then a follow-up question. Until now, the AI would reply to each one separately, creating a clumsy back-and-forth. With the new **response delay** setting, the AI now waits a configurable number of seconds (0 to 300) before replying, giving customers time to finish their thought.
+Real customers don't send one perfectly composed message — they send three quick texts, an image, then a follow-up question. Until now, the AI would reply to each one separately, creating a clumsy back-and-forth. With the new **response delay** setting, the AI now waits a configurable number of seconds (0–300) before replying, giving customers time to finish their thought.
 
 - **Configurable per assistant** — Set the response delay individually on each assistant in the assistant form. Leave it at zero for the original instant-reply behavior
 
 ### 📞 New Outbound Call Limits Page
-
 To stay aligned with carrier compliance regulations on shared infrastructure numbers, the new **Limits page** (now in the user menu, next to "My profile") shows your current daily outbound call allowance, your usage so far today, and your trust tier at a glance.
 
 - **Inbound and SIP trunk calls are unlimited** — The limits only apply to outbound calls placed through shared platform numbers; bring-your-own carrier accounts are not affected
@@ -33,11 +190,10 @@ To stay aligned with carrier compliance regulations on shared infrastructure num
 - **Bring your own carrier for unlimited outbound** — A prominent banner links to the BYO Telephony wizard for teams that want full control over their outbound volume
 - **Smart campaign handling** — Campaigns that hit the limit aren't paused or broken; they automatically resume the next day where they left off
 
-### 🚀 Voice Engine Upgrade: Across-the-Board Quality & Stability
-
+### 🚀 Voice Engine Upgrade — Across-the-Board Quality &amp; Stability
 The underlying voice engine has been upgraded. Customers should notice smoother calls, fewer mid-call hiccups, and faster response times across every voice mode.
 
-### 🛠 Other Improvements & Fixes
+### 🛠 Other Improvements &amp; Fixes
 
 - **Delete campaigns via API** — A new DELETE /campaign/{id} endpoint lets you remove campaigns programmatically; running campaigns are stopped automatically before deletion
 - **Assistant transfer over API** — The *assistant_transfer* tool now persists correctly when configured via the assistant API, and self-transfers (an assistant trying to transfer to itself) are blocked
@@ -47,62 +203,54 @@ The underlying voice engine has been upgraded. Customers should notice smoother 
 
 <Update label="v1.7.8" description="May 10 2026">
 
-### 🎙 OpenAI Realtime 2, GPT 5.5, Cartesia 3.5, Bring Your Own Telephony 1-click integration and more
+### 🎙 OpenAI Realtime 2, GPT 5.5, Cartesia 3.5, Bring Your Own Telephony 1 click integration and more
 
-### 🧠 GPT Realtime 2: Better Prompt Following
-
-Our **speech-to-speech and Dualplex mode** now includes OpenAI's **GPT Realtime 2**. The biggest win: the assistant follows your prompt much more reliably, staying on script, respecting your instructions, and handling complex multi-step conversations without drifting.
+### 🧠 GPT Realtime 2 — Better Prompt Following
+Our **speech-to-speech and Dualplex mode** now includes OpenAI's **GPT Realtime 2**. The biggest win: the assistant follows your prompt much more reliably — staying on script, respecting your instructions, and handling complex multi-step conversations without drifting.
 
 Combined with our proprietary **Dualplex™** technology, this delivers the best voice quality, lowest latency, and most reliable instruction-following available on any AI calling platform today.
 
-### 🎙 Cartesia Sonic 3.5: Voice Engine Upgrade
-
+### 🎙 Cartesia Sonic 3.5 — Voice Engine Upgrade
 The **Cartesia** voice engine has been upgraded to **Sonic 3.5**, the latest version. Expect noticeably more natural-sounding voices, better stability across long calls, and improved consistency on tricky words and names.
 
-The upgrade applies automatically to every assistant using Cartesia voices: no configuration changes needed.
+The upgrade applies automatically to every assistant using Cartesia voices — no configuration changes needed.
 
-### ⚡️ GPT-5.5: New Language Model in Pipeline Mode
-
-You can now select **GPT-5.5** as the language model for your assistants in pipeline mode. It's a great all-rounder: fast responses, strong reasoning, and excellent prompt-following, ideal for assistants that need both speed and intelligence without the cost of the flagship models.
+### ⚡️ GPT-5.5 — New Language Model in Pipeline Mode
+You can now select **GPT-5.5** as the language model for your assistants in pipeline mode. It's a great all-rounder: fast responses, strong reasoning, and excellent prompt-following — ideal for assistants that need both speed and intelligence without the cost of the flagship models.
 
 Available right now in your assistant's pipeline mode configuration.
 
-### 📞 Bring Your Own Telephony: Self-Service Carrier Imports
-
-You can now connect your own carrier accounts directly through a guided import wizard: no support ticket, no manual SIP setup. Teams that already have negotiated rates with their preferred provider can plug those accounts in and start dialing in minutes.
+### 📞 Bring Your Own Telephony — Self-Service Carrier Imports
+You can now connect your own carrier accounts directly through a guided import wizard — no support ticket, no manual SIP setup. Teams that already have negotiated rates with their preferred provider can plug those accounts in and start dialing in minutes.
 
 - **Twilio SIP trunks** — Full self-service import with a step-by-step onboarding help panel that walks you through each setting
 - **Telnyx support** — Connect Telnyx accounts using the same wizard experience as Twilio
-- **Zadarma & DIDLogic** — Two more carriers added to the picker, giving you more flexibility on regions and pricing
+- **Zadarma &amp; DIDLogic** — Two more carriers added to the picker, giving you more flexibility on regions and pricing
 
-### 🎤 Post-Call Re-Transcription for Dualplex™ & Multimodal Calls
-
+### 🎤 Post-Call Re-Transcription for Dualplex™ &amp; Multimodal Calls
 You can now automatically re-transcribe completed calls from the original recording at any time. Useful when you want to retry transcription with the most capable STT model.
 
 Re-transcription is available for both **Dualplex™** and multimodal assistants, with clear billing transparency built right into the assistant view.
 
-### 📂 Split-View Detail Panels: Calls & Conversations
-
-The calls and conversations list pages now have a side-by-side detail panel. Click any record on the left, see the full details on the right: no more clicking back and forth. Reviewing dozens of calls or chats is suddenly a much smoother experience.
+### 📂 Split-View Detail Panels — Calls &amp; Conversations
+The calls and conversations list pages now have a side-by-side detail panel. Click any record on the left, see the full details on the right — no more clicking back and forth. Reviewing dozens of calls or chats is suddenly a much smoother experience.
 
 - **Performance indexes added** — Navigating between records inside the panel is significantly faster, even on accounts with very high conversation volumes
 - **Extracted variables section** — Variables collected during the conversation are now displayed in a dedicated section on the conversation detail view
 
-### 💬 Disable & Enable AI Per Conversation
-
-Two new API endpoints let you pause and resume the AI for a specific conversation programmatically: perfect for human handoffs in WhatsApp and chat workflows. When the AI is disabled, your agents take over; re-enable it whenever you're ready to hand back.
+### 💬 Disable &amp; Enable AI Per Conversation
+Two new API endpoints let you pause and resume the AI for a specific conversation programmatically — perfect for human handoffs in WhatsApp and chat workflows. When the AI is disabled, your agents take over; re-enable it whenever you're ready to hand back.
 
 ### 💸 Auto Top-Up for Chat Credits
-
 Chat credits can now top up automatically when balances run low, with email notifications keeping you informed of every refill. No more interrupted chat experiences because credits ran dry overnight.
 
-### 🔄 Telephony & Call Flow Improvements
+### 🔄 Telephony &amp; Call Flow Improvements
 
 - **Initial message on AI-to-AI transfers** — When a call is transferred to an AI agent, the agent now speaks its initial message immediately for a smoother handoff
 - **Transfer caller details visible** — Transfer-to and client phone numbers are now displayed on transfer calls in the call view
 - **Single-character tool parameter names** — Tool parameters can now use single-character names, useful for compact JSON schemas
 
-### 🛠 Other Improvements & Fixes
+### 🛠 Other Improvements &amp; Fixes
 
 - **WhatsApp pre-verified number deletion** — Removing a pre-verified WhatsApp number now works correctly
 - **Phone number deletion** — Phone number deletion jobs now run reliably, with proper logging when something goes wrong
@@ -113,21 +261,17 @@ Chat credits can now top up automatically when balances run low, with email noti
 
 ### 🧠 Gemini 3.1 Flash Live, GPT Realtime 1.5 in Dualplex
 
-### 🧠 Gemini 3.1 Flash Live: New Speech-to-Speech Model
-
+### 🧠 Gemini 3.1 Flash Live — New Speech-to-Speech Model
 You can now run voice calls using **Google's Gemini 3.1 Flash Live** in speech-to-speech mode. This gives you another top-tier real-time voice option with excellent multilingual support and fast response times.
 
-### ⚡ GPT Realtime 1.5: Now with Dualplex™
-
-**GPT Realtime 1.5** now fully supports **Dualplex™** mode, our proprietary technology for the most natural-sounding AI phone calls. This means you get OpenAI's latest real-time model combined with superior interruption handling, smoother turn-taking, and lower perceived latency.
+### ⚡ GPT Realtime 1.5 — Now with Dualplex™
+**GPT Realtime 1.5** now fully supports **Dualplex™** mode — our proprietary technology for the most natural-sounding AI phone calls. This means you get OpenAI's latest real-time model combined with superior interruption handling, smoother turn-taking, and lower perceived latency.
 
 ### 📊 Per-Turn Latency Metrics
-
-Every conversation now tracks **detailed latency metrics for each turn**: how long the assistant took to respond, broken down by processing step. Use this to spot slow turns, compare model performance, and fine-tune your setup for the fastest possible calls.
+Every conversation now tracks **detailed latency metrics for each turn** — how long the assistant took to respond, broken down by processing step. Use this to spot slow turns, compare model performance, and fine-tune your setup for the fastest possible calls.
 
 ### 📈 Custom Dashboard Widgets
-
-Build your own dashboard with **customizable stat widgets**. Choose what data to display, apply percentage calculations, filter by time of day, and format with prefixes, suffixes, and abbreviations: all without writing code.
+Build your own dashboard with **customizable stat widgets**. Choose what data to display, apply percentage calculations, filter by time of day, and format with prefixes, suffixes, and abbreviations — all without writing code.
 
 ### 🛠️ Other Improvements
 
@@ -139,32 +283,28 @@ Build your own dashboard with **customizable stat widgets**. Choose what data to
 
 <Update label="v1.7.6" description="Mar 24 2026">
 
-### 🔀 Transfer to AI Assistant: Mid-Call Handoffs Between Specialized Agents
+### 🔀 Transfer to AI Assistant — Mid-Call Handoffs Between Specialized Agents
 
 <Frame>
-  <img
-    src="/resources/assistant-transfer-v1-7-6.png"
-    alt="Image"
-  />
+ <img
+ src="/resources/gclu22R5W8sMIDbcoS4vF3WfRqF7k5SJmSXqXQwz.webp"
+ alt="Image"
+ />
 </Frame>
 
-Your AI voice agent can now **transfer a live call to a different AI assistant**: mid-conversation, with zero interruption. The target assistant takes over with its own voice, language model, and transcription provider, so each step of the call gets the right specialist.
-
-**Why this matters:** Instead of building one massive assistant that handles everything, you can now create specialized agents for each stage of a call: a sales qualifier that hands off to a technical expert, a receptionist that routes to a scheduling specialist, or a triage agent that escalates to a support specialist.
+Your AI voice agent can now **transfer a live call to a different AI assistant** — mid-conversation, with zero interruption. The target assistant takes over with its own voice, language model, and transcription provider, so each step of the call gets the right specialist.**Why this matters:** Instead of building one massive assistant that handles everything, you can now create specialized agents for each stage of a call — a sales qualifier that hands off to a technical expert, a receptionist that routes to a scheduling specialist, or a triage agent that escalates to a support specialist.
 
 - **Seamless mid-call handoff** — the caller stays on the line while the conversation transfers to a different AI assistant with full context
 - **Full provider swap** — each assistant can use its own voice (ElevenLabs, Cartesia), language model (GPT-4o, GPT-5.4), and transcription engine
 - **Rich assistant selector** — choose the target assistant from a dropdown showing avatar, language, voice, and mode at a glance
 - **Works with the Flow Builder** — add assistant transfers as actions in your visual call flows alongside warm transfers, DTMF, and keypad collection
 
-**Example use case:** A dental clinic's receptionist AI answers the call, qualifies the patient, then transfers to a scheduling assistant that speaks the patient's language and books directly into the calendar: all in one seamless call.
+**Example use case:** A dental clinic's receptionist AI answers the call, qualifies the patient, then transfers to a scheduling assistant that speaks the patient's language and books directly into the calendar — all in one seamless call.
 
-### 📞 Warm Call Transfers: Now with Variable Injection
+### 📞 Warm Call Transfers — Now with Variable Injection
+Warm transfers just got smarter. When your AI agent transfers a call to a human supervisor, it can now **inject call variables** — like the caller's name, reason for calling, or qualification score — into the briefing. The supervisor picks up already knowing who's on the line and why.
 
-Warm transfers just got smarter. When your AI agent transfers a call to a human supervisor, it can now **inject call variables** like the caller's name, reason for calling, or qualification score into the briefing. The supervisor picks up already knowing who's on the line and why.
-
-### 🧠 GPT-5.4 Mini & Nano Models Available
-
+### 🧠 GPT-5.4 Mini &amp; Nano Models Available
 Two new language models are now available for your AI assistants:
 
 - **GPT-5.4 Mini** — faster responses at lower cost, ideal for simple call flows like appointment booking and FAQ handling
@@ -173,7 +313,6 @@ Two new language models are now available for your AI assistants:
 Select them from the Language Model dropdown when configuring your assistant. All existing prompts and tools work without changes.
 
 ### 🔧 Flow Builder Improvements
-
 The visual flow builder got several quality-of-life upgrades:
 
 - **New action types** — warm transfer, assistant transfer, DTMF input, and collect keypad are now available as flow actions

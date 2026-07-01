@@ -1,0 +1,25 @@
+---
+title: "Delete label"
+api: "DELETE /user/label/{id}"
+description: "Delete a label"
+---
+
+Delete a label. The label is removed from any assistants it was applied to — the assistants themselves are **not** affected.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The label ID. Must belong to your account.
+</ParamField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{ "message": "Label deleted successfully" }
+```
+
+```json 404 Not Found
+{ "message": "Label not found" }
+```
+
+</ResponseExample>

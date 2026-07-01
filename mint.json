@@ -6,11 +6,6 @@
     "light": "/resources/logo/light.png"
   },
   "favicon": "/favicon.png",
-  "seo": {
-    "metatags": {
-      "og:image": "https://ai.earsconnect.com/resources/logo/ears-og-image.png"
-    }
-  },
   "colors": {
     "primary": "#8AC146",
     "light": "#8AC146",
@@ -27,34 +22,42 @@
   "sidebar": {
     "items": "card"
   },
-  "topbarLinks": [{
-    "name": "Home",
-    "url": "https://juvodaytoday.com/"
-  }, {
-    "name": "Support",
-    "url": "https://ears-help.juvotec.com/"
-  }],
+  "topbarLinks": [
+    {
+      "name": "Home",
+      "url": "https://juvodaytoday.com/"
+    },
+    {
+      "name": "Support",
+      "url": "https://ears-help.juvotec.com/"
+    }
+  ],
   "topbarCtaButton": {
     "name": "Dashboard",
     "url": "https://ai.earsconnect.com"
   },
-  "anchors": [{
-    "name": "No-Code Automation",
-    "icon": "wand-magic-sparkles",
-    "color": "#8AC146",
-    "url": "automation-platform"
-  }, {
-    "name": "API Reference",
-    "icon": "code",
-    "color": "#868d93",
-    "url": "api-reference"
-  }, {
-    "name": "Platform updates",
-    "icon": "scroll",
-    "color": "#000000",
-    "url": "releases"
-  }],
-  "navigation": [{
+  "anchors": [
+    {
+      "name": "No-Code Automation",
+      "icon": "wand-magic-sparkles",
+      "color": "#6c63ff",
+      "url": "automation-platform"
+    },
+    {
+      "name": "API Reference",
+      "icon": "code",
+      "color": "#1c51fc",
+      "url": "api-reference"
+    },
+    {
+      "name": "Platform updates",
+      "icon": "scroll",
+      "color": "#ffbb00",
+      "url": "releases"
+    }
+  ],
+  "navigation": [
+    {
       "group": "Introduction",
       "pages": [
         "introduction/what-is-autocalls",
@@ -77,7 +80,6 @@
           "group": "Creating and Editing an AI Assistant",
           "icon": "robot",
           "pages": [
-            "ai-assistants/creating-and-editing",
             "ai-assistants/settings/general",
             "ai-assistants/settings/prompt-and-tools",
             "ai-assistants/settings/post-call-actions"
@@ -91,6 +93,7 @@
         "ai-assistants/initial-message",
         "ai-assistants/tools-and-functions",
         "ai-assistants/custom-tools",
+        "ai-assistants/mcp-servers",
         "ai-assistants/voice-selection",
         "ai-assistants/filler-audio",
         "ai-assistants/cal-com-scheduling",
@@ -187,6 +190,7 @@
     {
       "group": "Automation & Integrations",
       "pages": [
+        "mcp-connector",
         "automation/overview",
         "automation/webhook-api",
         "provisioning/phone-system-integrations"
@@ -197,9 +201,7 @@
       "pages": [
         "pricing/overview",
         "pricing/usage-based",
-        "pricing/number-rentals",
-        "pricing/extra-fees",
-        "pricing/inbound-vs-outbound"
+        "pricing/number-rentals"
       ]
     },
     {
@@ -207,7 +209,6 @@
       "pages": [
         "provisioning/supported-countries",
         "provisioning/managing-numbers",
-        "provisioning/compliance",
         {
           "group": "SIP trunking",
           "icon": "phone-volume",
@@ -215,7 +216,8 @@
             "provisioning/sip-trunking/sip-integration",
             "provisioning/sip-trunking/twilio",
             "provisioning/sip-trunking/zadarma",
-            "provisioning/sip-trunking/didlogic"
+            "provisioning/sip-trunking/didlogic",
+            "provisioning/sip-trunking/telnyx"
           ]
         }
       ]
@@ -231,14 +233,12 @@
       "pages": [
         "troubleshooting/ai-behavior",
         "troubleshooting/billing",
-        "troubleshooting/byop",
         "troubleshooting/cal-com",
         "troubleshooting/calendly",
         "troubleshooting/call-quality",
         "troubleshooting/campaigns",
         "troubleshooting/gohighlevel",
         "troubleshooting/leads",
-        "troubleshooting/setup-issues",
         "troubleshooting/sip-integration",
         "troubleshooting/voice-problems",
         "troubleshooting/web-widget",
@@ -275,6 +275,24 @@
       ]
     },
     {
+      "group": "Folders",
+      "pages": [
+        "api-reference/folders/get-folders",
+        "api-reference/folders/create-folder",
+        "api-reference/folders/update-folder",
+        "api-reference/folders/delete-folder"
+      ]
+    },
+    {
+      "group": "Labels",
+      "pages": [
+        "api-reference/labels/get-labels",
+        "api-reference/labels/create-label",
+        "api-reference/labels/update-label",
+        "api-reference/labels/delete-label"
+      ]
+    },
+    {
       "group": "Calls",
       "pages": [
         "api-reference/calls/get-calls",
@@ -289,7 +307,9 @@
         "api-reference/conversations/list-conversations",
         "api-reference/conversations/create-conversation",
         "api-reference/conversations/get-conversation",
-        "api-reference/conversations/send-message"
+        "api-reference/conversations/send-message",
+        "api-reference/conversations/disable-ai",
+        "api-reference/conversations/enable-ai"
       ]
     },
     {
@@ -322,7 +342,8 @@
       "pages": [
         "api-reference/campaigns/get-campaigns",
         "api-reference/campaigns/create-campaign",
-        "api-reference/campaigns/update-status"
+        "api-reference/campaigns/update-status",
+        "api-reference/campaigns/delete-campaign"
       ]
     },
     {
@@ -331,7 +352,18 @@
         "api-reference/phone-numbers/get-phone-numbers",
         "api-reference/phone-numbers/search-phone-numbers",
         "api-reference/phone-numbers/purchase-phone-number",
-        "api-reference/phone-numbers/release-phone-number"
+        "api-reference/phone-numbers/release-phone-number",
+        "api-reference/phone-numbers/update-phone-number"
+      ]
+    },
+    {
+      "group": "SIP Trunks",
+      "pages": [
+        "api-reference/sip-trunks/list-sip-trunks",
+        "api-reference/sip-trunks/get-sip-trunk",
+        "api-reference/sip-trunks/create-sip-trunk",
+        "api-reference/sip-trunks/update-sip-trunk",
+        "api-reference/sip-trunks/delete-sip-trunk"
       ]
     },
     {
@@ -369,7 +401,8 @@
       "group": "Webhooks",
       "pages": [
         "api-reference/webhooks/post-call-webhook",
-        "api-reference/webhooks/conversation-ended-webhook"
+        "api-reference/webhooks/conversation-ended-webhook",
+        "api-reference/webhooks/read-receipts-webhook"
       ]
     },
     {

@@ -1,0 +1,108 @@
+---
+title: "Get SIP trunk"
+api: "GET /user/phone-numbers/sip-trunks/{id}"
+description: "Get a single SIP trunk by ID"
+---
+
+This endpoint returns detailed information about a specific SIP trunk, including internal trunk IDs useful for debugging.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the SIP trunk
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The SIP trunk object
+
+  <Expandable title="SIP trunk properties">
+    <ResponseField name="id" type="integer">
+      The unique identifier of the SIP trunk
+    </ResponseField>
+
+    <ResponseField name="phone_number" type="string">
+      The SIP extension or phone number (DID) in E.164 format
+    </ResponseField>
+
+    <ResponseField name="nickname" type="string">
+      A short, human-friendly label for the trunk (or `null` if not set)
+    </ResponseField>
+
+    <ResponseField name="sip_username" type="string">
+      The username used for SIP authentication
+    </ResponseField>
+
+    <ResponseField name="sip_address" type="string">
+      The SIP server address
+    </ResponseField>
+
+    <ResponseField name="sip_calling_format" type="string">
+      The outbound calling number format: `+e164`, `e164`, or `national`
+    </ResponseField>
+
+    <ResponseField name="inbound_authorization_type" type="string">
+      The inbound authorization method: `auth` or `ip`
+    </ResponseField>
+
+    <ResponseField name="allowed_inbound_ips" type="array">
+      Array of whitelisted IP addresses (only when `inbound_authorization_type` is `ip`)
+    </ResponseField>
+
+    <ResponseField name="outbound_proxy" type="boolean">
+      Whether outbound calls use a fixed proxy IP address
+    </ResponseField>
+
+    <ResponseField name="country_code" type="string">
+      The ISO 3166-2 country code
+    </ResponseField>
+
+    <ResponseField name="inbound_trunk_id" type="string">
+      Internal identifier for the inbound voice trunk (useful for debugging)
+    </ResponseField>
+
+    <ResponseField name="outbound_trunk_id" type="string">
+      Internal identifier for the outbound voice trunk (useful for debugging)
+    </ResponseField>
+
+    <ResponseField name="created_at" type="string">
+      ISO 8601 timestamp
+    </ResponseField>
+
+    <ResponseField name="updated_at" type="string">
+      ISO 8601 timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "data": {
+    "id": 42,
+    "phone_number": "1000",
+    "nickname": "Provider X — Main",
+    "sip_username": "myuser",
+    "sip_address": "sip.provider.com",
+    "sip_calling_format": "+e164",
+    "inbound_authorization_type": "auth",
+    "allowed_inbound_ips": null,
+    "outbound_proxy": false,
+    "country_code": "US",
+    "inbound_trunk_id": "ST_xxxxxxxxxxxx",
+    "outbound_trunk_id": "ST_yyyyyyyyyyyy",
+    "created_at": "2026-03-31T10:00:00.000000Z",
+    "updated_at": "2026-03-31T10:00:00.000000Z"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": "SIP trunk not found."
+}
+```
+
+</ResponseExample>

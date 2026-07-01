@@ -1,0 +1,85 @@
+---
+title: "Update phone number"
+api: "PUT /user/phone-numbers/{id}"
+description: "Update a phone number's nickname"
+---
+
+This endpoint updates the editable attributes of a phone number you own. Currently this is the **nickname** — a short, human-friendly label (e.g. "Sales line", "Support — US") shown next to the number across the dashboard.
+
+Only the **owner** of the number can update it. Numbers shared with you (granted) display the nickname but cannot be changed by you.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the phone number to update
+</ParamField>
+
+### Body Parameters
+
+<ParamField body="nickname" type="string">
+  A short label for the phone number. Maximum 50 characters. Send `null` or an empty string to clear it.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated phone number
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">
+      The unique identifier of the phone number
+    </ResponseField>
+    <ResponseField name="phone_number" type="string">
+      The phone number in E.164 format
+    </ResponseField>
+    <ResponseField name="nickname" type="string">
+      The phone number's nickname (or `null` if not set)
+    </ResponseField>
+    <ResponseField name="country_code" type="string">
+      The ISO 3166-1 alpha-2 country code
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      The type of phone number: `normal`, `sip`, or `caller_id`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "message": "Phone number updated successfully.",
+  "data": {
+    "id": 1,
+    "phone_number": "+14155551234",
+    "nickname": "Sales line",
+    "country_code": "US",
+    "type": "normal"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "error": "Phone number not found."
+}
+```
+
+```json 422 Validation Error
+{
+  "message": "The nickname must not exceed 50 characters.",
+  "errors": {
+    "nickname": ["The nickname must not exceed 50 characters."]
+  }
+}
+```
+
+</ResponseExample>
+
+<Note>
+The nickname is the same label you can set in the dashboard. It is returned by the phone number listing endpoints (`GET /user/phone-numbers/all`, `GET /user/phone-numbers/sip-trunks`), so other resources that reference a number by `phone_number_id` can resolve its nickname from there.
+</Note>

@@ -1,0 +1,51 @@
+---
+title: "Update folder"
+api: "PUT /user/folder/{id}"
+description: "Rename a folder or change its color"
+---
+
+Update a folder's name or color. Only the fields you send are changed.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The folder ID. Must belong to your account.
+</ParamField>
+
+### Request Body
+
+<ParamField body="name" type="string">
+  New name (max 255 characters). Must be unique within your account.
+</ParamField>
+
+<ParamField body="color" type="string">
+  New color. One of: `gray`, `slate`, `red`, `orange`, `amber`, `green`, `teal`, `blue`, `purple`, `pink`. Send `null` to clear it.
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">Success message</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="properties">
+    <ResponseField name="id" type="integer">The folder ID</ResponseField>
+    <ResponseField name="name" type="string">The folder name</ResponseField>
+    <ResponseField name="color" type="string">The folder color (or `null`)</ResponseField>
+    <ResponseField name="assistants_count" type="integer">Number of assistants in this folder</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Success Response
+{
+  "message": "Folder updated successfully",
+  "data": { "id": 12, "name": "Acme Inc.", "color": "pink", "assistants_count": 4 }
+}
+```
+
+```json 404 Not Found
+{ "message": "Folder not found" }
+```
+
+</ResponseExample>
