@@ -113,24 +113,11 @@ def list_extensions(cfg: dict) -> list[dict]:
 
 
 def list_devices(cfg: dict) -> list[dict]:
-    """All devices for the tenant, paged through."""
-    all_records: list[dict] = []
-    page = 1
-    while True:
-        data = api_get(
-            cfg,
-            "/v2/admin/devices/",
-            {"tenantId": cfg["tenant_id"], "page": page, "recordsPerPage": 500},
-        )
-        if isinstance(data, list):
-            all_records.extend(data)
-            return all_records
-        records = data.get("records") or []
-        all_records.extend(records)
-        max_page = data.get("maxPage") or page
-        if page >= max_page or not records:
-            return all_records
-        page += 1
+    """All devices for the tenant."""
+    data = api_get(cfg, "/v2/admin/devices/", {"tenantId": cfg["tenant_id"]})
+    if isinstance(data, list):
+        return data
+    return data.get("records") or []
 
 
 def device_is_online(device: dict) -> bool:
