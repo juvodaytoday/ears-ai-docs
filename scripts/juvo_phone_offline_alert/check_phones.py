@@ -55,7 +55,7 @@ def load_config() -> dict:
             for t in os.getenv("INCLUDE_EXTENSION_TYPES", "voice").split(",")
             if t.strip()
         ],
-        "registration_id_field": os.getenv("REGISTRATION_ID_FIELD", "number"),
+        "registration_id_field": os.getenv("REGISTRATION_ID_FIELD", "id"),
         "smtp_host": os.getenv("SMTP_HOST"),
         "smtp_port": int(os.getenv("SMTP_PORT", "587")),
         "smtp_username": os.getenv("SMTP_USERNAME"),
@@ -104,7 +104,11 @@ def list_extensions(cfg: dict) -> list[dict]:
 
 def extension_registrations(cfg: dict, extension_id: int | str) -> object:
     """Raw registrations payload for one extension."""
-    return api_get(cfg, f"/v2/admin/extensions/{extension_id}/registrations")
+    return api_get(
+        cfg,
+        f"/v2/admin/extensions/{extension_id}/registrations",
+        {"tenantId": cfg["tenant_id"]},
+    )
 
 
 def is_online_from_registrations(data: object) -> bool:
