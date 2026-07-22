@@ -55,6 +55,7 @@ def load_config() -> dict:
             for t in os.getenv("INCLUDE_EXTENSION_TYPES", "voice").split(",")
             if t.strip()
         ],
+        "registration_id_field": os.getenv("REGISTRATION_ID_FIELD", "number"),
         "smtp_host": os.getenv("SMTP_HOST"),
         "smtp_port": int(os.getenv("SMTP_PORT", "587")),
         "smtp_username": os.getenv("SMTP_USERNAME"),
@@ -158,6 +159,8 @@ def build_current_state(cfg: dict, verbose: bool, debug_dumps: int = 0) -> tuple
     if verbose:
         print(f"  Checking {len(extensions)} extension(s)...")
 
+    id_field = cfg.get("registration_id_field") or "number"
+
     state: dict[str, dict] = {}
     meta: dict[str, dict] = {}
     for idx, ext in enumerate(extensions):
@@ -166,16 +169,24 @@ def build_current_state(cfg: dict, verbose: bool, debug_dumps: int = 0) -> tuple
         number = ext.get("number") or ""
         ext_type = ext.get("type") or ""
 
+        raw_identifier = ext.get(id_field)
+        if raw_identifier in (None, ""):
+            print(
+                f"  WARN: extension record {ext_id} has no {id_field} value, skipping"
+            )
+            continue
+        identifier = str(raw_identifier)
+
         try:
-            payload = extension_registrations(cfg, ext_id)
+            payload = extension_registrations(cfg, identifier)
         except requests.HTTPError as err:
-            print(f"  WARN: registrations lookup failed for ext {ext_id} ({number}): {err}")
+            print(f"  WARN: registrations lookup failed for ext {identifier} ({name}): {err}")
             continue
 
         online = is_online_from_registrations(payload)
 
         if idx < debug_dumps:
-            print(f"  DEBUG raw registrations for ext {ext_id} ({number} {name}):")
+            print(f"  DEBUG raw registrations (called with {id_field}={identifier}) for ext {number} {name}:")
             print("    " + json.dumps(payload, indent=2).replace("\n", "\n    "))
 
         status = "online" if online else "offline"
