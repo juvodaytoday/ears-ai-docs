@@ -101,21 +101,37 @@ def list_extensions(cfg: dict) -> list[dict]:
     return records
 
 
-def extension_is_online(cfg: dict, extension_id: int | str) -> bool:
-    """True if the extension has any active SIP registration."""
-    data = api_get(cfg, f"/v2/admin/extensions/{extension_id}/registrations")
+def extension_registrations(cfg: dict, extension_id: int | str) -> object:
+    """Raw registrations payload for one extension."""
+    return api_get(cfg, f"/v2/admin/extensions/{extension_id}/registrations")
+
+
+def is_online_from_registrations(data: object) -> bool:
+    """Decide online/offline from a registrations payload.
+
+    Handles the shapes we've observed:
+      {}                                     -> offline
+      []                                     -> offline
+      {"items": {}}                          -> offline
+      {"items": []}                          -> offline
+      {"items": {"Contact": {...}}}          -> online
+      {"items": [{"Contact": {...}}, ...]}   -> online
+      [{"Contact": {...}}, ...]              -> online
+      {"<peer>": {"Contact": {...}}, ...}    -> online
+    """
     if not data:
         return False
-    # Response shape: { items: { Contact: {...} } } or a list of items.
-    items = data.get("items") if isinstance(data, dict) else None
-    if items is None:
-        # Some endpoints return the object directly.
-        items = data
-    if isinstance(items, list):
-        return any(bool(entry) for entry in items)
-    if isinstance(items, dict):
-        return bool(items.get("Contact") or items)
-    return False
+
+    def _has_contact(node: object) -> bool:
+        if isinstance(node, list):
+            return any(_has_contact(x) for x in node)
+        if isinstance(node, dict):
+            if node.get("Contact"):
+                return True
+            return any(_has_contact(v) for v in node.values())
+        return False
+
+    return _has_contact(data)
 
 
 def load_state(path: Path) -> dict:
@@ -132,25 +148,35 @@ def save_state(path: Path, state: dict) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True))
 
 
-def build_current_state(cfg: dict, verbose: bool) -> tuple[dict, dict]:
-    """Return (state_by_id, meta_by_id) for the current run."""
+def build_current_state(cfg: dict, verbose: bool, debug_dumps: int = 0) -> tuple[dict, dict]:
+    """Return (state_by_id, meta_by_id) for the current run.
+
+    If debug_dumps > 0, print the raw registrations JSON for the first
+    N extensions so we can eyeball the actual response shape.
+    """
     extensions = list_extensions(cfg)
     if verbose:
         print(f"  Checking {len(extensions)} extension(s)...")
 
     state: dict[str, dict] = {}
     meta: dict[str, dict] = {}
-    for ext in extensions:
+    for idx, ext in enumerate(extensions):
         ext_id = str(ext.get("id"))
         name = ext.get("name") or ""
         number = ext.get("number") or ""
         ext_type = ext.get("type") or ""
 
         try:
-            online = extension_is_online(cfg, ext_id)
+            payload = extension_registrations(cfg, ext_id)
         except requests.HTTPError as err:
             print(f"  WARN: registrations lookup failed for ext {ext_id} ({number}): {err}")
             continue
+
+        online = is_online_from_registrations(payload)
+
+        if idx < debug_dumps:
+            print(f"  DEBUG raw registrations for ext {ext_id} ({number} {name}):")
+            print("    " + json.dumps(payload, indent=2).replace("\n", "\n    "))
 
         status = "online" if online else "offline"
         state[ext_id] = {"status": status, "number": number, "name": name, "type": ext_type}
@@ -243,6 +269,13 @@ def main() -> int:
         help=f"Path to the state file (default: {DEFAULT_STATE_FILE.name} next to this script).",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Print every extension checked.")
+    parser.add_argument(
+        "--debug-dumps",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Print the raw registrations JSON for the first N extensions (for troubleshooting).",
+    )
     args = parser.parse_args()
 
     cfg = load_config()
@@ -261,7 +294,7 @@ def main() -> int:
         f"{summary.get('totalExtensions')} total"
     )
 
-    current, _meta = build_current_state(cfg, args.verbose)
+    current, _meta = build_current_state(cfg, args.verbose, args.debug_dumps)
 
     prev_state = load_state(args.state_file)
     prev_extensions = prev_state.get("extensions", {})
