@@ -1,2 +1,8 @@
 .DS_Store
 **/.DS_Store
+
+# Juvo phone offline alert - local-only files
+scripts/juvo_phone_offline_alert/.env
+scripts/juvo_phone_offline_alert/state.json
+scripts/juvo_phone_offline_alert/.venv/
+scripts/juvo_phone_offline_alert/__pycache__/
