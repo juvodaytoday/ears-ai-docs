@@ -1,6 +1,6 @@
 """Phone offline alert - Juvo internal test.
 
-Polls VOXO extension registration status for a single tenant, compares it
+Polls VOXO device registration status for a single tenant, compares it
 against the previous run's state file, and emails an alert when any
 extension transitions from online to offline.
 
@@ -10,9 +10,20 @@ you pass --send.
 Environment: reads .env sitting next to this script. See .env.example.
 
 Endpoints used:
-  GET /v2/admin/extensions/summary            (informational count)
-  GET /v2/admin/extensions/                   (enumerate)
-  GET /v2/admin/extensions/{id}/registrations (per-extension status)
+  GET /v2/admin/extensions/summary  (informational count)
+  GET /v2/admin/extensions/         (extension metadata by id)
+  GET /v2/admin/devices/            (per-device userAgent -> online/offline)
+
+Why the devices endpoint: on Juvo's tenant, the documented
+/extensions/{id}/registrations endpoint returns [] for every extension
+regardless of the id form used, disagreeing with the summary. The
+devices endpoint exposes a userAgent field per device that is
+"Empty string when ... the phone is not currently registered" per the
+docs, which is the same signal we need. Limitation: devices are
+physical/registered endpoints (desk phones, ATAs, paging horns).
+Softphone-only extensions have no device record and are skipped.
+That is the right scope for the Republic Finance use case (desk-phone
+drops), and it matches this script's intent.
 """
 
 from __future__ import annotations
@@ -55,7 +66,6 @@ def load_config() -> dict:
             for t in os.getenv("INCLUDE_EXTENSION_TYPES", "voice").split(",")
             if t.strip()
         ],
-        "registration_id_field": os.getenv("REGISTRATION_ID_FIELD", "id"),
         "smtp_host": os.getenv("SMTP_HOST"),
         "smtp_port": int(os.getenv("SMTP_PORT", "587")),
         "smtp_username": os.getenv("SMTP_USERNAME"),
@@ -102,41 +112,31 @@ def list_extensions(cfg: dict) -> list[dict]:
     return records
 
 
-def extension_registrations(cfg: dict, extension_id: int | str) -> object:
-    """Raw registrations payload for one extension."""
-    return api_get(
-        cfg,
-        f"/v2/admin/extensions/{extension_id}/registrations",
-        {"tenantId": cfg["tenant_id"]},
-    )
+def list_devices(cfg: dict) -> list[dict]:
+    """All devices for the tenant, paged through."""
+    all_records: list[dict] = []
+    page = 1
+    while True:
+        data = api_get(
+            cfg,
+            "/v2/admin/devices/",
+            {"tenantId": cfg["tenant_id"], "page": page, "recordsPerPage": 500},
+        )
+        if isinstance(data, list):
+            all_records.extend(data)
+            return all_records
+        records = data.get("records") or []
+        all_records.extend(records)
+        max_page = data.get("maxPage") or page
+        if page >= max_page or not records:
+            return all_records
+        page += 1
 
 
-def is_online_from_registrations(data: object) -> bool:
-    """Decide online/offline from a registrations payload.
-
-    Handles the shapes we've observed:
-      {}                                     -> offline
-      []                                     -> offline
-      {"items": {}}                          -> offline
-      {"items": []}                          -> offline
-      {"items": {"Contact": {...}}}          -> online
-      {"items": [{"Contact": {...}}, ...]}   -> online
-      [{"Contact": {...}}, ...]              -> online
-      {"<peer>": {"Contact": {...}}, ...}    -> online
-    """
-    if not data:
-        return False
-
-    def _has_contact(node: object) -> bool:
-        if isinstance(node, list):
-            return any(_has_contact(x) for x in node)
-        if isinstance(node, dict):
-            if node.get("Contact"):
-                return True
-            return any(_has_contact(v) for v in node.values())
-        return False
-
-    return _has_contact(data)
+def device_is_online(device: dict) -> bool:
+    """Per the docs, userAgent is an empty string when the phone is not
+    currently registered. Anything else means an active SIP registration."""
+    return bool((device.get("userAgent") or "").strip())
 
 
 def load_state(path: Path) -> dict:
@@ -153,51 +153,61 @@ def save_state(path: Path, state: dict) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True))
 
 
-def build_current_state(cfg: dict, verbose: bool, debug_dumps: int = 0) -> tuple[dict, dict]:
+def build_current_state(cfg: dict, verbose: bool) -> tuple[dict, dict]:
     """Return (state_by_id, meta_by_id) for the current run.
 
-    If debug_dumps > 0, print the raw registrations JSON for the first
-    N extensions so we can eyeball the actual response shape.
+    Groups devices by their primary-line extension ID (phLine1ExId).
+    Extension is online if any of its devices has a non-empty userAgent.
+    Extensions with no assigned device are skipped (softphone-only users
+    don't have a device record and can't be tracked via this endpoint).
     """
     extensions = list_extensions(cfg)
+    devices = list_devices(cfg)
     if verbose:
-        print(f"  Checking {len(extensions)} extension(s)...")
+        print(f"  Found {len(extensions)} extension(s) and {len(devices)} device(s)")
 
-    id_field = cfg.get("registration_id_field") or "number"
+    devices_by_ext: dict[str, list[dict]] = {}
+    for dev in devices:
+        ext_id = dev.get("phLine1ExId")
+        if ext_id is None:
+            continue
+        devices_by_ext.setdefault(str(ext_id), []).append(dev)
 
     state: dict[str, dict] = {}
     meta: dict[str, dict] = {}
-    for idx, ext in enumerate(extensions):
+    skipped = 0
+    for ext in extensions:
         ext_id = str(ext.get("id"))
         name = ext.get("name") or ""
         number = ext.get("number") or ""
         ext_type = ext.get("type") or ""
 
-        raw_identifier = ext.get(id_field)
-        if raw_identifier in (None, ""):
-            print(
-                f"  WARN: extension record {ext_id} has no {id_field} value, skipping"
-            )
-            continue
-        identifier = str(raw_identifier)
-
-        try:
-            payload = extension_registrations(cfg, identifier)
-        except requests.HTTPError as err:
-            print(f"  WARN: registrations lookup failed for ext {identifier} ({name}): {err}")
+        ext_devices = devices_by_ext.get(ext_id, [])
+        if not ext_devices:
+            skipped += 1
+            if verbose:
+                print(f"    {number or '(no num)':>8} {name[:30]:30} -> (no device, skipped)")
             continue
 
-        online = is_online_from_registrations(payload)
+        online_devices = [d for d in ext_devices if device_is_online(d)]
+        status = "online" if online_devices else "offline"
+        device_labels = [d.get("name") or d.get("mac") or "?" for d in ext_devices]
 
-        if idx < debug_dumps:
-            print(f"  DEBUG raw registrations (called with {id_field}={identifier}) for ext {number} {name}:")
-            print("    " + json.dumps(payload, indent=2).replace("\n", "\n    "))
-
-        status = "online" if online else "offline"
-        state[ext_id] = {"status": status, "number": number, "name": name, "type": ext_type}
+        state[ext_id] = {
+            "status": status,
+            "number": number,
+            "name": name,
+            "type": ext_type,
+            "devices": device_labels,
+        }
         meta[ext_id] = {"number": number, "name": name, "type": ext_type}
         if verbose:
-            print(f"    {number or '(no number)':>8} {name[:30]:30} -> {status}")
+            print(
+                f"    {number or '(no num)':>8} {name[:30]:30} -> {status}  "
+                f"[{', '.join(device_labels)}]"
+            )
+    if skipped:
+        print(f"  ({skipped} extension(s) had no device record and were skipped)")
     return state, meta
 
 
@@ -215,6 +225,7 @@ def find_transitions(prev: dict, curr: dict) -> list[dict]:
                     "number": curr_entry.get("number"),
                     "name": curr_entry.get("name"),
                     "type": curr_entry.get("type"),
+                    "devices": curr_entry.get("devices", []),
                     "previously_seen_at": prev_entry.get("checked_at"),
                 }
             )
@@ -237,7 +248,9 @@ def build_alert_email(cfg: dict, dropped: list[dict], summary: dict, checked_at:
     ]
     for d in dropped:
         label = " ".join(filter(None, [d.get("number"), d.get("name")]))
-        lines.append(f"  - {label or d['id']} (ext id {d['id']})")
+        devs = d.get("devices") or []
+        dev_note = f"  [device: {', '.join(devs)}]" if devs else ""
+        lines.append(f"  - {label or d['id']} (ext id {d['id']}){dev_note}")
     lines += [
         "",
         "This is an internal Juvo test of the VOXO extension-status API.",
@@ -284,13 +297,6 @@ def main() -> int:
         help=f"Path to the state file (default: {DEFAULT_STATE_FILE.name} next to this script).",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Print every extension checked.")
-    parser.add_argument(
-        "--debug-dumps",
-        type=int,
-        default=0,
-        metavar="N",
-        help="Print the raw registrations JSON for the first N extensions (for troubleshooting).",
-    )
     args = parser.parse_args()
 
     cfg = load_config()
@@ -309,7 +315,7 @@ def main() -> int:
         f"{summary.get('totalExtensions')} total"
     )
 
-    current, _meta = build_current_state(cfg, args.verbose, args.debug_dumps)
+    current, _meta = build_current_state(cfg, args.verbose)
 
     prev_state = load_state(args.state_file)
     prev_extensions = prev_state.get("extensions", {})

@@ -11,13 +11,24 @@ Not on a schedule yet. You run it manually while we build trust in it.
 
 1. Reads `.env` for the VOXO token, tenant ID, and email settings.
 2. Calls `GET /v2/admin/extensions/summary` for a top-line count.
-3. Lists voice extensions for the tenant, then calls
-   `GET /v2/admin/extensions/{id}/registrations` on each one to decide
-   online vs offline.
-4. Loads `state.json` from the last run and compares.
-5. For any extension that went **online -> offline**, drafts an alert email.
-6. Writes the current status back to `state.json`.
-7. Prints the email (dry-run) by default. Adds `--send` to actually deliver.
+3. Lists voice extensions for the tenant and lists devices
+   (`GET /v2/admin/devices/`). Each device has a `userAgent` field that
+   VOXO leaves empty when the phone is not currently registered — that's
+   the online/offline signal.
+4. Matches devices to extensions (via each device's primary line) and
+   marks an extension **online** if any of its devices is registered.
+5. Loads `state.json` from the last run and compares.
+6. For any extension that went **online -> offline**, drafts an alert email.
+7. Writes the current status back to `state.json`.
+8. Prints the email (dry-run) by default. Adds `--send` to actually deliver.
+
+**Scope note:** this catches desk phones, ATAs, and paging horns —
+anything that shows up as a device on VOXO. Softphone-only users
+(no assigned device record) are skipped and logged as such. For the
+Republic Finance use case (desk phones dropping offline), that's the
+right target. If a customer later needs softphone tracking too, VOXO
+will need to fix or clarify `/extensions/{id}/registrations` for us,
+or we add device-less extension coverage another way.
 
 ## First-time setup
 
