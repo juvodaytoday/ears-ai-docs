@@ -1,29 +1,28 @@
-"""Phone offline alert - Juvo internal test.
+"""Branch-wide phone offline alert - Juvo internal test.
 
-Polls VOXO device registration status for a single tenant, compares it
-against the previous run's state file, and emails an alert when any
-extension transitions from online to offline.
+Polls VOXO device registration status for a single tenant, groups
+extensions by branch, and emails an alert when a WHOLE BRANCH goes
+dark - i.e. every physical phone in that branch is offline. Single
+phones dropping do not fire alerts; that is intentional and matches
+Republic Finance's actual ask (a branch outage, not a hardware blip).
 
 Manual runs only for now. Defaults to --dry-run so nothing sends until
 you pass --send.
+
+For testing without disrupting the office, --test-threshold N treats
+a branch as offline when N or fewer phones are online. In production
+you leave the flag off, which reverts to strict "zero phones online."
 
 Environment: reads .env sitting next to this script. See .env.example.
 
 Endpoints used:
   GET /v2/admin/extensions/summary  (informational count)
-  GET /v2/admin/extensions/         (extension metadata by id)
+  GET /v2/admin/extensions/         (extension list for this tenant)
+  GET /v2/admin/extensions/{id}     (per-extension profile, for branch)
   GET /v2/admin/devices/            (per-device userAgent -> online/offline)
 
-Why the devices endpoint: on Juvo's tenant, the documented
-/extensions/{id}/registrations endpoint returns [] for every extension
-regardless of the id form used, disagreeing with the summary. The
-devices endpoint exposes a userAgent field per device that is
-"Empty string when ... the phone is not currently registered" per the
-docs, which is the same signal we need. Limitation: devices are
-physical/registered endpoints (desk phones, ATAs, paging horns).
-Softphone-only extensions have no device record and are skipped.
-That is the right scope for the Republic Finance use case (desk-phone
-drops), and it matches this script's intent.
+Softphone-only extensions have no device record and are excluded from
+branch tallies - they're not part of the "site dark" signal.
 """
 
 from __future__ import annotations
@@ -120,10 +119,27 @@ def list_devices(cfg: dict) -> list[dict]:
     return data.get("records") or []
 
 
+def get_extension_profile(cfg: dict, extension_id: str) -> dict:
+    """Full extension profile - the only list surface that returns branch info."""
+    return api_get(cfg, f"/v2/admin/extensions/{extension_id}")
+
+
 def device_is_online(device: dict) -> bool:
     """Per the docs, userAgent is an empty string when the phone is not
     currently registered. Anything else means an active SIP registration."""
     return bool((device.get("userAgent") or "").strip())
+
+
+NO_BRANCH_KEY = "_none"
+
+
+def branch_key(branch: dict | None) -> tuple[str, str]:
+    """Return (key, display_name) for a branch object. Groups extensions
+    that have no branch metadata into a single 'no branch' bucket so
+    they still get tracked instead of silently dropped."""
+    if not branch or branch.get("id") in (None, ""):
+        return NO_BRANCH_KEY, "(no branch)"
+    return str(branch.get("id")), branch.get("name") or f"branch {branch.get('id')}"
 
 
 def load_state(path: Path) -> dict:
@@ -140,13 +156,13 @@ def save_state(path: Path, state: dict) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True))
 
 
-def build_current_state(cfg: dict, verbose: bool) -> tuple[dict, dict]:
-    """Return (state_by_id, meta_by_id) for the current run.
+def build_current_state(cfg: dict, verbose: bool, test_threshold: int) -> dict:
+    """Return a per-branch state snapshot for the current run.
 
-    Groups devices by their primary-line extension ID (phLine1ExId).
-    Extension is online if any of its devices has a non-empty userAgent.
-    Extensions with no assigned device are skipped (softphone-only users
-    don't have a device record and can't be tracked via this endpoint).
+    A branch is considered offline when its online-phone count is at or
+    below `test_threshold` (default 0 = strict "all phones offline").
+    Softphone-only extensions (no device record) are excluded from the
+    branch tallies entirely.
     """
     extensions = list_extensions(cfg)
     devices = list_devices(cfg)
@@ -160,94 +176,133 @@ def build_current_state(cfg: dict, verbose: bool) -> tuple[dict, dict]:
             continue
         devices_by_ext.setdefault(str(ext_id), []).append(dev)
 
-    state: dict[str, dict] = {}
-    meta: dict[str, dict] = {}
+    branches: dict[str, dict] = {}
     skipped = 0
+
     for ext in extensions:
         ext_id = str(ext.get("id"))
         name = ext.get("name") or ""
         number = ext.get("number") or ""
-        ext_type = ext.get("type") or ""
 
         ext_devices = devices_by_ext.get(ext_id, [])
         if not ext_devices:
             skipped += 1
-            if verbose:
-                print(f"    {number or '(no num)':>8} {name[:30]:30} -> (no device, skipped)")
             continue
 
-        online_devices = [d for d in ext_devices if device_is_online(d)]
-        status = "online" if online_devices else "offline"
+        try:
+            profile = get_extension_profile(cfg, ext_id)
+        except requests.HTTPError as err:
+            print(f"  WARN: profile lookup failed for ext {number or ext_id}: {err}")
+            continue
+
+        b_key, b_name = branch_key(profile.get("branch"))
+        online = any(device_is_online(d) for d in ext_devices)
         device_labels = [d.get("name") or d.get("mac") or "?" for d in ext_devices]
 
-        state[ext_id] = {
-            "status": status,
-            "number": number,
-            "name": name,
-            "type": ext_type,
-            "devices": device_labels,
-        }
-        meta[ext_id] = {"number": number, "name": name, "type": ext_type}
-        if verbose:
+        branch_entry = branches.setdefault(
+            b_key,
+            {"id": b_key, "name": b_name, "extensions": []},
+        )
+        branch_entry["extensions"].append(
+            {
+                "id": ext_id,
+                "number": number,
+                "name": name,
+                "status": "online" if online else "offline",
+                "devices": device_labels,
+            }
+        )
+
+    for b in branches.values():
+        online_count = sum(1 for e in b["extensions"] if e["status"] == "online")
+        offline_count = len(b["extensions"]) - online_count
+        b["online_count"] = online_count
+        b["offline_count"] = offline_count
+        b["total_count"] = len(b["extensions"])
+        b["status"] = "offline" if online_count <= test_threshold else "online"
+
+    if verbose:
+        for b in sorted(branches.values(), key=lambda x: x["name"].lower()):
             print(
-                f"    {number or '(no num)':>8} {name[:30]:30} -> {status}  "
-                f"[{', '.join(device_labels)}]"
+                f"  Branch: {b['name']}  ({b['online_count']}/{b['total_count']} online) "
+                f"-> {b['status']}"
             )
+            for e in sorted(b["extensions"], key=lambda x: (x["number"] or "")):
+                print(
+                    f"    {e['number'] or '(no num)':>8} {e['name'][:30]:30} "
+                    f"-> {e['status']}  [{', '.join(e['devices'])}]"
+                )
     if skipped:
         print(f"  ({skipped} extension(s) had no device record and were skipped)")
-    return state, meta
+    return branches
 
 
-def find_transitions(prev: dict, curr: dict) -> list[dict]:
-    """Extensions that were online last time and are offline now."""
+def find_branch_transitions(prev: dict, curr: dict) -> list[dict]:
+    """Branches that were online last time and are offline now."""
     dropped = []
-    for ext_id, curr_entry in curr.items():
-        if curr_entry["status"] != "offline":
+    prev_branches = prev.get("branches", {}) if isinstance(prev, dict) else {}
+    for b_key, curr_branch in curr.items():
+        if curr_branch["status"] != "offline":
             continue
-        prev_entry = prev.get(ext_id)
-        if prev_entry and prev_entry.get("status") == "online":
+        prev_branch = prev_branches.get(b_key)
+        if prev_branch and prev_branch.get("status") == "online":
             dropped.append(
                 {
-                    "id": ext_id,
-                    "number": curr_entry.get("number"),
-                    "name": curr_entry.get("name"),
-                    "type": curr_entry.get("type"),
-                    "devices": curr_entry.get("devices", []),
-                    "previously_seen_at": prev_entry.get("checked_at"),
+                    "id": b_key,
+                    "name": curr_branch.get("name"),
+                    "online_count": curr_branch["online_count"],
+                    "offline_count": curr_branch["offline_count"],
+                    "total_count": curr_branch["total_count"],
+                    "extensions": curr_branch["extensions"],
+                    "previously_seen_at": prev_branch.get("checked_at"),
                 }
             )
     return dropped
 
 
-def build_alert_email(cfg: dict, dropped: list[dict], summary: dict, checked_at: str) -> EmailMessage:
+def build_alert_email(
+    cfg: dict, dropped_branches: list[dict], summary: dict, checked_at: str, test_threshold: int
+) -> EmailMessage:
     lines = [
-        "Juvo phone offline alert",
+        "Juvo branch-offline alert",
         "",
         f"Checked at: {checked_at}",
         f"Tenant ID:  {cfg['tenant_id']}",
+    ]
+    if test_threshold > 0:
+        lines.append(
+            f"(TEST mode: a branch was flagged offline when {test_threshold} or fewer "
+            f"phones were online. In production the threshold is 0.)"
+        )
+    lines += [
         "",
         f"Account summary: {summary.get('onlineExtensions', '?')} online / "
         f"{summary.get('offlineExtensions', '?')} offline / "
         f"{summary.get('totalExtensions', '?')} total",
         "",
-        f"{len(dropped)} extension(s) went from online to offline since the last check:",
+        f"{len(dropped_branches)} branch(es) went from online to offline since the last check:",
         "",
     ]
-    for d in dropped:
-        label = " ".join(filter(None, [d.get("number"), d.get("name")]))
-        devs = d.get("devices") or []
-        dev_note = f"  [device: {', '.join(devs)}]" if devs else ""
-        lines.append(f"  - {label or d['id']} (ext id {d['id']}){dev_note}")
+    for b in dropped_branches:
+        lines.append(
+            f"  * {b.get('name')} "
+            f"({b['online_count']}/{b['total_count']} phones online, "
+            f"{b['offline_count']} offline)"
+        )
+        for e in b.get("extensions", []):
+            label = " ".join(filter(None, [e.get("number"), e.get("name")]))
+            devs = e.get("devices") or []
+            dev_note = f"  [device: {', '.join(devs)}]" if devs else ""
+            lines.append(f"      - {label or e['id']} -> {e['status']}{dev_note}")
     lines += [
         "",
-        "This is an internal Juvo test of the VOXO extension-status API.",
-        "No external customer is affected by or notified of this alert.",
+        "This is an internal Juvo test. No external customer is affected by or notified of this alert.",
     ]
 
     msg = EmailMessage()
-    msg["Subject"] = f"[Juvo test] {len(dropped)} phone(s) offline"
-    msg["From"] = cfg["smtp_from"] or cfg["smtp_username"]
-    msg["To"] = ", ".join(cfg["recipients"])
+    msg["Subject"] = f"[Juvo test] {len(dropped_branches)} branch(es) offline"
+    msg["From"] = cfg["smtp_from"] or cfg["smtp_username"] or "phone-alert@juvo.local"
+    msg["To"] = ", ".join(cfg["recipients"]) if cfg["recipients"] else "no-recipients-configured@juvo.local"
     msg.set_content("\n".join(lines))
     return msg
 
@@ -284,12 +339,24 @@ def main() -> int:
         help=f"Path to the state file (default: {DEFAULT_STATE_FILE.name} next to this script).",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Print every extension checked.")
+    parser.add_argument(
+        "--test-threshold",
+        type=int,
+        default=0,
+        metavar="N",
+        help=(
+            "Test only: flag a branch as offline when N or fewer phones are online. "
+            "Default 0 (strict 'all phones offline'). Leave off in production."
+        ),
+    )
     args = parser.parse_args()
 
     cfg = load_config()
     checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     print(f"[{checked_at}] Checking VOXO tenant {cfg['tenant_id']}")
+    if args.test_threshold > 0:
+        print(f"  TEST mode: branch offline when {args.test_threshold} or fewer phones online")
 
     try:
         summary = get_summary(cfg)
@@ -302,34 +369,39 @@ def main() -> int:
         f"{summary.get('totalExtensions')} total"
     )
 
-    current, _meta = build_current_state(cfg, args.verbose)
+    current_branches = build_current_state(cfg, args.verbose, args.test_threshold)
 
     prev_state = load_state(args.state_file)
-    prev_extensions = prev_state.get("extensions", {})
-
-    dropped = find_transitions(prev_extensions, current)
+    dropped = find_branch_transitions(prev_state, current_branches)
 
     if not prev_state:
         print("  First run - no prior state, so no transitions can be reported.")
     elif dropped:
-        print(f"  {len(dropped)} extension(s) went online -> offline since last check:")
-        for d in dropped:
-            label = " ".join(filter(None, [d.get("number"), d.get("name")])) or d["id"]
-            print(f"    - {label} (id {d['id']})")
+        print(f"  {len(dropped)} branch(es) went online -> offline since last check:")
+        for b in dropped:
+            print(
+                f"    * {b['name']}  "
+                f"({b['online_count']}/{b['total_count']} online, {b['offline_count']} offline)"
+            )
     else:
-        print("  No online -> offline transitions since last check.")
+        print("  No branches went from online to fully-offline since last check.")
 
-    for ext_id, entry in current.items():
-        entry["checked_at"] = checked_at
+    for b in current_branches.values():
+        b["checked_at"] = checked_at
 
     save_state(
         args.state_file,
-        {"tenant_id": cfg["tenant_id"], "checked_at": checked_at, "extensions": current},
+        {
+            "tenant_id": cfg["tenant_id"],
+            "checked_at": checked_at,
+            "test_threshold": args.test_threshold,
+            "branches": current_branches,
+        },
     )
     print(f"  State written to {args.state_file}")
 
     if dropped:
-        msg = build_alert_email(cfg, dropped, summary, checked_at)
+        msg = build_alert_email(cfg, dropped, summary, checked_at, args.test_threshold)
         if args.send:
             send_alert(cfg, msg)
             print(f"  Alert emailed to: {', '.join(cfg['recipients'])}")
