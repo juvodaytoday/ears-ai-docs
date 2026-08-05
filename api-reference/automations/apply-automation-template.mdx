@@ -1,0 +1,99 @@
+---
+title: "Apply automation template"
+api: "POST /user/automate/templates/{key}"
+description: "Create an automation from a ready-made template and prove it with a real test run"
+---
+
+This endpoint creates an automation from a template (see [List automation templates](/api-reference/automations/list-automation-templates)), runs a **real test**, and — for assistant-event templates — attaches the automation to the assistant once the test passes. It returns the same envelope as [Create automation](/api-reference/automations/create-automation).
+
+<Warning>
+Templates marked `side_effects: true` really send messages or start calls during their test run — applying them requires `confirm_side_effects: true`, and the test targets the real values you supplied. Never apply a template with example or guessed values.
+</Warning>
+
+### Path Parameters
+
+<ParamField path="key" type="string" required>
+  The template key (from [List automation templates](/api-reference/automations/list-automation-templates)). An unknown key returns a `404`.
+</ParamField>
+
+### Request body
+
+<ParamField body="params" type="object" optional>
+  The template's parameters as key-value pairs — see the template's `params` list for what each one needs. Missing required parameters return a `422` (`missing_params`) listing exactly what is needed. Max 64 KB.
+</ParamField>
+
+<ParamField body="assistant_id" type="integer" optional>
+  The assistant the resulting automation attaches to. Required for templates with `requires_assistant: true`.
+</ParamField>
+
+<ParamField body="name" type="string" optional>
+  A custom name for the automation (max 255 characters); defaults to the template name
+</ParamField>
+
+<ParamField body="confirm_side_effects" type="boolean" optional>
+  Required (`true`) for templates marked `side_effects: true`
+</ParamField>
+
+### Response
+
+The [Create automation](/api-reference/automations/create-automation) envelope: `automation_id`, `webhook_url` (for webhook-triggered templates such as `lead-intake-webhook` and the mid-call lookup ones; `null` for assistant-event templates), `status` (`active` / `active_untested` / `test_failed`), `test` (`run_status` + per-step outcomes), `response`, `binding`. Returns `201` when the automation is active, `200` when its test run failed.
+
+A template whose test run parks at a Delay step (e.g. `post-call-callback`) reports `run_status: "PAUSED"` — that is success, not a failure: every step before the delay ran, and the run resumes at the target time.
+
+### Error codes (`422`)
+
+Hard failures return `{"message": "...", "error": "<code>", "params": ...}` and nothing is created. Notable codes:
+
+| `error` | Meaning |
+|---|---|
+| `missing_params` | Required parameters are missing — the response's `params` array lists their full specs. |
+| `invalid_param_choice` | A parameter references a resource (e.g. a spreadsheet) that does not exist in your connected account — the message lists the real choices by name. |
+| `needs_connection` / `needs_reconnection` | A required account connection is missing or broken — the message contains the exact steps to fix it in the app (one-time). |
+| `side_effects_require_confirmation` | The template sends for real — retry with `confirm_side_effects: true`. |
+| `assistant_required` / `assistant_not_found` / `binding_conflict` | Same as [Create automation](/api-reference/automations/create-automation). |
+
+<ResponseExample>
+
+```json 201 Response (test passed and attached)
+{
+  "automation_id": "aB3xYz01MnOpQrStUvWxY",
+  "webhook_url": null,
+  "status": "active",
+  "test": {
+    "run_status": "SUCCEEDED",
+    "steps": []
+  },
+  "response": null,
+  "binding": {
+    "type": "post_call",
+    "assistant_id": 123,
+    "bound": true
+  }
+}
+```
+
+```json 422 Response (missing params)
+{
+  "message": "These values are required: spreadsheet_id. Ask the user for them — never guess or reuse example values.",
+  "error": "missing_params",
+  "params": [
+    {
+      "key": "spreadsheet_id",
+      "label": "Google Spreadsheet ID",
+      "description": "The spreadsheet to append rows to.",
+      "required": true,
+      "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz"
+    }
+  ]
+}
+```
+
+```json 404 Response (unknown template)
+{
+  "message": "No template with that key — call the template list first.",
+  "error": "template_not_found",
+  "params": null
+}
+```
+
+</ResponseExample>

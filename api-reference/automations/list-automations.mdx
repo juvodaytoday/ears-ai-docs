@@ -1,0 +1,72 @@
+---
+title: "List automations"
+api: "GET /user/automate/flows"
+description: "List the automations in your account"
+---
+
+This endpoint lists every automation in your account, with its current status and — for automations attached to an assistant event — the assistant it is attached to.
+
+### Response
+
+<ResponseField name="data" type="array">
+  The list of automations
+
+  <Expandable title="data item properties">
+    <ResponseField name="id" type="string">
+      The unique ID of the automation. Use it with the other automation endpoints.
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      The display name of the automation
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      `enabled` (live, reacting to events) or `disabled` (off — a failed test run or an explicit disable)
+    </ResponseField>
+
+    <ResponseField name="binding" type="object | null">
+      Present when the automation is attached to one of your assistants' events, otherwise `null`
+
+      <Expandable title="binding properties">
+        <ResponseField name="type" type="string">
+          The assistant event this automation reacts to: `post_call`, `inbound`, `conversation` or `conversation_ended`
+        </ResponseField>
+
+        <ResponseField name="assistant_id" type="integer">
+          The ID of the assistant it is attached to
+        </ResponseField>
+
+        <ResponseField name="assistant_name" type="string">
+          The name of the assistant it is attached to
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "data": [
+    {
+      "id": "OaeThAHzIjAPTmMJAhgwm",
+      "name": "Qualified leads to Google Sheets",
+      "status": "enabled",
+      "binding": {
+        "type": "post_call",
+        "assistant_id": 123,
+        "assistant_name": "Sales Assistant"
+      }
+    },
+    {
+      "id": "nCazgFt1COAmGVgCWkvxY",
+      "name": "Daily call report (17:00)",
+      "status": "disabled",
+      "binding": null
+    }
+  ]
+}
+```
+
+</ResponseExample>

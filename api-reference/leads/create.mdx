@@ -17,7 +17,7 @@ This endpoint allows you to create a new lead in the EARS AI system.
 </ParamField>
 
 <ParamField body="variables" type="object">
-  Custom variables to pass to the lead. You can include **any variables that are defined on your assistant** (see [Call variables](/ai-assistants/settings/prompt-and-tools#call-variables)). The examples below are just for illustration — use your own variable names as configured in the assistant settings.
+  Custom variables for the lead. For **call** campaigns, use variables defined on your assistant (see [Call variables](/ai-assistants/settings/prompt-and-tools#call-variables)). For **WhatsApp/SMS** campaigns, use the keys referenced by your template mapping or SMS body placeholders.
 
   <Expandable title="Example variables (add your own)">
     <ParamField body="customer_name" type="string">
@@ -35,7 +35,7 @@ This endpoint allows you to create a new lead in the EARS AI system.
 </ParamField>
 
 <ParamField body="secondary_contacts" type="array">
-  Array of secondary contact leads to create along with the main lead
+  Call campaigns only. Extra phone numbers for the same lead. Rejected for WhatsApp/SMS campaigns.
   
   <Expandable title="secondary_contacts properties">
     <ParamField body="phone_number" type="string" required>

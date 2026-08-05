@@ -20,6 +20,31 @@ The TTS Provider dropdown appears after selecting a language.
 
 Each TTS provider has its own voice library. Select male/female, accent, or language based on your provider.
 
+## Importing Voices from the Provider Library
+
+Beyond the built-in catalog, you can import any public voice from your TTS provider's own library (ElevenLabs Voice Library or Cartesia Library). Available in **Pipeline** and **Dualplex** modes.
+
+**Steps:**
+1. Click "Import voice" next to the voice selector
+2. Pick the provider (ElevenLabs or Cartesia)
+3. Open the provider's voice library and find a voice you like
+4. Copy the voice link or ID (the ⋮ menu next to the voice)
+5. Paste it in the import field and click Import
+
+<Frame caption="ElevenLabs Voice Library — copy the voice link or ID from the ⋮ menu">
+  <img src="/resources/ai-assistants/voice-import-elevenlabs.png" alt="Copy voice link in the ElevenLabs Voice Library" />
+</Frame>
+
+<Frame caption="Cartesia Voice Library — copy the voice ID from the ⋮ menu">
+  <img src="/resources/ai-assistants/voice-import-cartesia.png" alt="Copy ID in the Cartesia Voice Library" />
+</Frame>
+
+You'll get a notification when the voice is ready — it then appears in the voice picker like any other voice, billed at the same flat per-minute rate.
+
+**Notes:**
+- ElevenLabs voices with a custom price set by their creator cannot be imported.
+- Private or unshared voices cannot be imported — only public library voices.
+
 ## Voice Cloning
 
 Clone a voice from an audio sample. Available in **Pipeline** and **Dualplex** modes.

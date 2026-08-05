@@ -1,10 +1,10 @@
 ---
 title: "Update campaign status"
 api: "POST /user/campaigns/update-status"
-description: "Start or stop a campaign in the EARS AI system"
+description: "Start or stop a call, WhatsApp, or SMS campaign"
 ---
 
-This endpoint allows you to start or stop a campaign in the EARS AI system.
+Start or stop a campaign you own. Starting validates channel config (assistant / WhatsApp template / SMS number), schedule, and balance. Disabled channels (for example SMS when temporarily unavailable) cannot be started.
 
 ### Request body
 
@@ -13,29 +13,31 @@ This endpoint allows you to start or stop a campaign in the EARS AI system.
 </ParamField>
 
 <ParamField body="action" type="string" required>
-  The action to perform on the campaign. Must be either "start" or "stop"
+  `start` or `stop`
 </ParamField>
 
 ### Response
 
 <ResponseField name="message" type="string" default="Campaign started successfully.">
-  The message of the response
+  Human-readable outcome
 </ResponseField>
 
 <ResponseField name="success" type="boolean" default="true">
-  Whether the operation was successful
+  Whether the operation succeeded
 </ResponseField>
 
 <ResponseField name="data" type="object">
-  The data of the response
-  
   <Expandable title="data properties">
     <ResponseField name="campaign_id" type="integer">
-      The ID of the updated campaign
+      Campaign ID
     </ResponseField>
     
     <ResponseField name="status" type="string" default="in-progress">
-      The new status of the campaign (e.g., "in-progress" for started campaigns, "stopped" for stopped campaigns)
+      New status (e.g. `in-progress`, `paused`)
+    </ResponseField>
+
+    <ResponseField name="channel" type="string">
+      `call`, `whatsapp`, or `sms`
     </ResponseField>
   </Expandable>
 </ResponseField>

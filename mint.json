@@ -341,9 +341,25 @@
       "group": "Campaigns",
       "pages": [
         "api-reference/campaigns/get-campaigns",
+        "api-reference/campaigns/get-campaign",
         "api-reference/campaigns/create-campaign",
         "api-reference/campaigns/update-status",
         "api-reference/campaigns/delete-campaign"
+      ]
+    },
+    {
+      "group": "Automations",
+      "pages": [
+        "api-reference/automations/list-automations",
+        "api-reference/automations/get-automation",
+        "api-reference/automations/create-automation",
+        "api-reference/automations/update-automation",
+        "api-reference/automations/restore-automation",
+        "api-reference/automations/delete-automation",
+        "api-reference/automations/list-automation-runs",
+        "api-reference/automations/retry-automation-run",
+        "api-reference/automations/list-automation-templates",
+        "api-reference/automations/apply-automation-template"
       ]
     },
     {

@@ -1,38 +1,38 @@
 ---
 title: "Campaigns Overview"
 icon: "bullhorn"
-description: "Learn how to create and manage automated calling campaigns to reach multiple leads efficiently"
+description: "Create and manage call, WhatsApp, and SMS campaigns to reach leads at scale"
 ---
 
-Campaigns enable you to automate calls to multiple leads using your AI assistant. Set up scheduling, retry logic, and lead management to run efficient outbound calling operations.
+Campaigns automate outreach to many leads on one channel: **phone calls**, **WhatsApp templates**, or **SMS** (when enabled). Configure schedule windows, retries, and lead lists once, then start the campaign.
 
 ## What is a Campaign?
 
-A campaign is an automated system that calls multiple leads on your behalf using a configured AI assistant. Each campaign includes:
+A campaign contacts a list of leads using your chosen channel. Call campaigns use an OUTBOUND AI assistant; WhatsApp campaigns use an approved template; SMS campaigns use an SMS-capable from-number and message body.
 
 <CardGroup cols={2}>
+  <Card title="Channels" icon="layer-group">
+    **Call, WhatsApp, or SMS**
+    
+    Same lead list workflow — pick the channel when you create the campaign
+  </Card>
+
   <Card title="Lead Management" icon="users">
-    **Primary and secondary contacts** for comprehensive outreach
+    **Import or add leads**
     
-    Import leads from CSV, integrations, or add manually
+    CSV, integrations, API, or manual entry. Secondary contacts are for call campaigns only.
   </Card>
   
-  <Card title="Scheduling Control" icon="calendar">
-    **Time and day restrictions** to respect customer preferences
+  <Card title="Schedule windows" icon="calendar">
+    **One or more daily intervals**
     
-    Set allowed calling hours and days of the week
+    Overnight windows (e.g. 16:00→02:00) and optional scheduled auto-start
   </Card>
   
-  <Card title="Retry Logic" icon="repeat">
-    **Intelligent retry system** for unanswered calls
+  <Card title="Retries & fallback" icon="repeat">
+    **Retries per lead**
     
-    Configure retry attempts, intervals, and conditions
-  </Card>
-  
-  <Card title="Goal Tracking" icon="bullseye">
-    **Success measurement** with completion variables
-    
-    Track campaign objectives and lead conversion
+    Call campaigns can also send a WhatsApp/SMS follow-up after max retries
   </Card>
 </CardGroup>
 
@@ -59,42 +59,50 @@ A campaign is an automated system that calls multiple leads on your behalf using
 ## Key Features
 
 ### Scheduling & Timing
-- **Allowed calling hours:** Set start and end times (e.g., 9:00 AM - 6:00 PM)
-- **Allowed days:** Choose specific days of the week for calling
-- **Timezone support:** Uses assistant's configured timezone
-- **Call window validation:** System automatically respects time restrictions
+- **Schedule windows:** One or more daily `{start, end}` intervals (preferred over a single start/end pair)
+- **Overnight windows:** End earlier than start (e.g. 16:00→02:00) is supported
+- **Allowed days + timezone:** Campaign timezone controls when the window applies
+- **Scheduled start:** Optionally auto-start at a future datetime
 
-### Retry System
-- **Max retries:** 1-5 attempts for unanswered calls (default: 3)
-- **Retry interval:** 10-4320 minutes between attempts (default: 60 minutes)
-- **Retry on voicemail:** Continue calling until human answers
-- **Goal-based retry:** Keep calling until objective is achieved (requires [post-call variables](/ai-assistants/settings/post-call-actions#post-call-variables) with boolean type)
+### Call campaigns
+- OUTBOUND assistant + from-numbers
+- **Max parallel calls** (plan-bounded)
+- **Retry on voicemail** / **retry until goal** (boolean [post-call variables](/ai-assistants/settings/post-call-actions#post-call-variables))
+- Optional **WhatsApp/SMS fallback** after max call retries (low chat credits skip the fallback — they do not pause the voice campaign)
+
+### WhatsApp campaigns
+- Sender + approved template + variable mapping
+- **`messages_per_minute`** (1–10) per campaign
+- **User-wide pool of 10** in-flight WhatsApp sends across all your active WhatsApp campaigns
+
+### SMS campaigns
+- SMS-capable from-number + body (`{{variable}}` placeholders)
+- May be temporarily unavailable on the platform — start will fail with a clear message if disabled
 
 ### Lead Types
 - **Primary leads:** Main contacts imported or added to campaign
-- **Secondary contacts:** Additional contacts linked to primary leads
-- **Lead status tracking:** Monitor call progress and outcomes
+- **Secondary contacts:** Call campaigns only — extra numbers to try
+- **Lead status tracking:** Monitor progress and outcomes
 
 ## Requirements
 
 Before starting a campaign:
 
 <Warning>
-**Phone Number Required:** Your assistant must have a [phone number configured](/ai-assistants/settings/general#phone-number-configuration) for outbound calls.
+**Call campaigns:** Your assistant must have a [phone number configured](/ai-assistants/settings/general#phone-number-configuration) for outbound calls.
 </Warning>
 
-- **Configured AI assistant** with outbound calling capability
-- **Sufficient account balance** for call costs
-- **Leads added** to the campaign (manual, import, or integration)
-- **Valid phone numbers** for all leads
+- **Channel config ready** — assistant (call), WhatsApp sender+template, or SMS number+body
+- **Sufficient balance** — minutes for calls; chat credits for WhatsApp
+- **Leads added** with valid phone numbers (E.164 recommended)
 
 ## Quick Start
 
-1. **Create Campaign:** Choose a name and select your AI assistant
-2. **Set Schedule:** Define allowed calling hours and days
+1. **Create Campaign:** Choose channel (call / WhatsApp / SMS) and required config
+2. **Set Schedule:** Define schedule windows and allowed days
 3. **Configure Retries:** Set retry attempts and intervals
 4. **Add Leads:** Import from CSV or add manually
-5. **Start Campaign:** Click start when ready to begin calling
+5. **Start Campaign:** Start when ready — sending/dialing begins on the next scheduler cycle
 
 <Note>
 For detailed setup instructions, see [Creating a Campaign](/campaigns/creating-campaigns).

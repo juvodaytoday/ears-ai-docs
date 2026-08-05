@@ -24,8 +24,16 @@ This endpoint sends a freeform (free-text) WhatsApp message to a recipient. Unli
   The recipient's phone number in international format (e.g., `+1234567890`)
 </ParamField>
 
-<ParamField body="message" type="string" required>
-  The message content to send (max 4096 characters)
+<ParamField body="message" type="string">
+  The message content to send (max 4096 characters). Optional when `media_url` is provided — in that case it is used as the media caption. **Audio files are the exception: WhatsApp does not support captions on audio, so the text is ignored when `media_url` points to an audio file.** **Either `message` or `media_url` is required.**
+</ParamField>
+
+<ParamField body="media_url" type="string">
+  Optional public URL of a file to send — an image, audio file, video, or document. The file must be reachable at a public URL (WhatsApp fetches it at send time). When set, `message` is used as the caption for images, videos and documents. **Audio files cannot carry a caption — if you send an audio file, any `message` text is ignored.** **Either `message` or `media_url` is required.**
+</ParamField>
+
+<ParamField body="filename" type="string">
+  Optional filename shown to the recipient, mainly useful for documents (e.g. `invoice.pdf`).
 </ParamField>
 
 ### Response Fields
@@ -164,6 +172,19 @@ response = requests.post(
 print(response.json())
 ```
 
+```bash cURL (with media)
+curl -X POST "https://ai.earsconnect.com/api/user/whatsapp/send-freeform" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sender_id": 12,
+    "recipient_phone": "+1234567890",
+    "message": "Here is the menu you asked for!",
+    "media_url": "https://example.com/files/menu.pdf",
+    "filename": "menu.pdf"
+  }'
+```
+
 </RequestExample>
 
 <ResponseExample>
@@ -249,6 +270,7 @@ Use the [Session Status](/api-reference/whatsapp/session-status) endpoint to che
 ### Notes
 
 - Maximum message length is **4,096 characters** (WhatsApp limit).
+- A file (image, audio, video, or document) can be attached with `media_url`. It must be hosted at a publicly reachable URL — WhatsApp fetches it at send time. When sending media, `message` is optional and is used as the caption. **Audio is the exception: WhatsApp does not support captions on audio files, so when `media_url` points to an audio file the `message` text is not sent.**
 - The sender must be `online`. Offline senders return a `503` error.
 - Message costs are automatically deducted from your account balance.
 - Rate limit: 5 requests per second per user.

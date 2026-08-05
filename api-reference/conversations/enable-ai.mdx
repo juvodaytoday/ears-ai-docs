@@ -1,6 +1,6 @@
 ---
 title: "Enable AI"
-api: "POST /automate/conversations/{uuid}/enable-ai"
+api: "POST /user/conversations/{uuid}/enable-ai"
 description: "Re-enable AI replies for a conversation after a human takeover"
 ---
 
@@ -8,7 +8,7 @@ Re-enables AI responses for a conversation that was previously disabled via the 
 
 ### Authentication
 
-This endpoint requires your **Automate API key** as a Bearer token.
+This endpoint requires your **API key** as a Bearer token.
 
 ### Path Parameters
 
@@ -40,7 +40,7 @@ This endpoint requires your **Automate API key** as a Bearer token.
 <RequestExample>
 
 ```bash cURL
-curl -X POST "https://ai.earsconnect.com/api/automate/conversations/7c9e6679-7425-40de-944b-e07fc1f90ae7/enable-ai" \
+curl -X POST "https://ai.earsconnect.com/api/user/conversations/7c9e6679-7425-40de-944b-e07fc1f90ae7/enable-ai" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -48,7 +48,7 @@ curl -X POST "https://ai.earsconnect.com/api/automate/conversations/7c9e6679-742
 const conversationId = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
 const response = await fetch(
-  `https://ai.earsconnect.com/api/automate/conversations/${conversationId}/enable-ai`,
+  `https://ai.earsconnect.com/api/user/conversations/${conversationId}/enable-ai`,
   {
     method: 'POST',
     headers: {
@@ -67,7 +67,7 @@ import requests
 conversation_id = '7c9e6679-7425-40de-944b-e07fc1f90ae7'
 
 response = requests.post(
-    f'https://ai.earsconnect.com/api/automate/conversations/{conversation_id}/enable-ai',
+    f'https://ai.earsconnect.com/api/user/conversations/{conversation_id}/enable-ai',
     headers={'Authorization': 'Bearer YOUR_API_KEY'}
 )
 

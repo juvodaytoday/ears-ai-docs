@@ -1,0 +1,75 @@
+---
+title: "Get campaign"
+api: "GET /user/campaign/{id}"
+description: "Get a single campaign by ID"
+---
+
+Returns one campaign you own. Response `data` uses the same fields as [List campaigns](/api-reference/campaigns/get-campaigns).
+
+### Path parameters
+
+<ParamField path="id" type="integer" required>
+  Campaign ID
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  Full campaign object including `channel`, `schedule_windows`, WhatsApp/SMS config, and fallback fields.
+</ResponseField>
+
+### Error responses
+
+<ResponseField name="404 Not Found">
+  Campaign does not exist or does not belong to you.
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "data": {
+    "id": 2,
+    "name": "WhatsApp Follow-up",
+    "channel": "whatsapp",
+    "status": "draft",
+    "assistant_id": null,
+    "timezone": "UTC",
+    "max_calls_in_parallel": 3,
+    "messages_per_minute": 10,
+    "schedule_windows": [{ "start": "09:00", "end": "20:00" }],
+    "scheduled_start_at": null,
+    "allowed_hours_start_time": "09:00",
+    "allowed_hours_end_time": "20:00",
+    "allowed_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+    "max_retries": 3,
+    "retry_interval": 60,
+    "retry_on_voicemail": false,
+    "retry_on_goal_incomplete": false,
+    "goal_completion_variable": null,
+    "mark_complete_when_no_leads": true,
+    "phone_number_ids": [],
+    "whatsapp_sender_id": 7,
+    "whatsapp_template_id": 15,
+    "sms_from_phone_number_id": null,
+    "sms_body": null,
+    "text_variable_mapping": { "1": "customer_name" },
+    "fallback_channel": null,
+    "fallback_whatsapp_sender_id": null,
+    "fallback_whatsapp_template_id": null,
+    "fallback_sms_from_phone_number_id": null,
+    "fallback_sms_body": null,
+    "fallback_variable_mapping": null,
+    "created_at": "2026-07-24 10:00:00",
+    "updated_at": "2026-07-24 10:00:00"
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "message": "Campaign not found"
+}
+```
+
+</ResponseExample>

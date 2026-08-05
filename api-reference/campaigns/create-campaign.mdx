@@ -1,207 +1,216 @@
 ---
 title: "Create campaign"
 api: "POST /user/campaign"
-description: "Create a new outbound calling campaign"
+description: "Create a draft call, WhatsApp, or SMS campaign"
 ---
 
-This endpoint allows you to create a new outbound calling campaign with the specified configuration.
+Create a new campaign. Campaigns start in `draft` — add leads, then start with [Update campaign status](/api-reference/campaigns/update-status).
+
+Supported channels:
+- **`call`** (default) — outbound voice with an OUTBOUND assistant
+- **`whatsapp`** — approved WhatsApp template via one of your senders
+- **`sms`** — SMS body from an SMS-capable number (may be temporarily unavailable on the platform)
 
 ### Request body
 
+#### Shared
+
 <ParamField body="name" type="string" required>
-  The name of the campaign. Maximum 255 characters.
+  Campaign name. Maximum 255 characters.
 </ParamField>
 
-<ParamField body="assistant_id" type="integer" required>
-  The ID of the assistant to use for the campaign. Must be an outbound-capable assistant.
+<ParamField body="channel" type="string" default="call">
+  `call`, `whatsapp`, or `sms`.
 </ParamField>
 
 <ParamField body="timezone" type="string">
-  Timezone identifier for the campaign (e.g., `America/New_York`, `Europe/London`). Defaults to your account timezone.
+  IANA timezone for the send/call window (e.g. `America/New_York`). Defaults to the assistant timezone for call campaigns, otherwise your account timezone.
 </ParamField>
 
-<ParamField body="max_calls_in_parallel" type="integer" default="3">
-  Maximum number of simultaneous calls. Minimum: 1. Maximum depends on your plan's parallel calls limit (up to 10).
+<ParamField body="schedule_windows" type="array">
+  Preferred schedule: one or more daily windows as objects with `start` and `end` in `HH:MM`. Overnight windows are supported when `end` is earlier than `start` (e.g. `16:00` → `02:00`).
 </ParamField>
 
 <ParamField body="allowed_hours_start_time" type="string" default="00:00">
-  Start of the allowed calling window in `H:i` format (e.g., `09:00`).
+  Legacy single-window start (`HH:MM`). Used if `schedule_windows` is omitted.
 </ParamField>
 
 <ParamField body="allowed_hours_end_time" type="string" default="23:59">
-  End of the allowed calling window in `H:i` format (e.g., `17:00`).
+  Legacy single-window end (`HH:MM`). Overnight when end &lt; start.
+</ParamField>
+
+<ParamField body="scheduled_start_at" type="string">
+  Optional ISO datetime. When set, the campaign can be scheduled to auto-start at that time.
 </ParamField>
 
 <ParamField body="allowed_days" type="array" default="all 7 days">
-  Array of weekday names when calls are allowed. Valid values: `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`.
+  Weekdays: `monday` … `sunday`.
 </ParamField>
 
 <ParamField body="max_retries" type="integer" default="3">
-  Maximum number of retry attempts for failed calls. Range: 1-5.
+  Max retry attempts per lead. Range: 1–5.
 </ParamField>
 
 <ParamField body="retry_interval" type="integer" default="60">
-  Interval in minutes between retry attempts. Range: 10-4320 (up to 3 days).
-</ParamField>
-
-<ParamField body="retry_on_voicemail" type="boolean">
-  Whether to retry calls that reached voicemail.
-</ParamField>
-
-<ParamField body="retry_on_goal_incomplete" type="boolean">
-  Whether to retry calls where the goal was not completed.
-</ParamField>
-
-<ParamField body="goal_completion_variable" type="string">
-  Name of a boolean variable from your assistant's post-call schema to track goal completion. Maximum 255 characters.
+  Minutes between retries. Range: 10–4320.
 </ParamField>
 
 <ParamField body="mark_complete_when_no_leads" type="boolean" default="true">
-  Whether to automatically mark the campaign as complete when there are no remaining leads to call.
+  Automatically mark the campaign complete when no remaining work is left.
+</ParamField>
+
+#### Call campaigns
+
+<ParamField body="assistant_id" type="integer">
+  Required for `channel=call`. Must be an OUTBOUND assistant you own.
+</ParamField>
+
+<ParamField body="max_calls_in_parallel" type="integer" default="3">
+  Concurrent calls (plan-bounded, max 10).
 </ParamField>
 
 <ParamField body="phone_number_ids" type="array">
-  Array of phone number IDs to use for the campaign. Each ID must be a distinct integer.
+  Outbound from-number IDs available to your account.
+</ParamField>
+
+<ParamField body="retry_on_voicemail" type="boolean">
+  Retry when a call hits voicemail.
+</ParamField>
+
+<ParamField body="retry_on_goal_incomplete" type="boolean">
+  Keep retrying until a boolean post-call goal variable is true.
+</ParamField>
+
+<ParamField body="goal_completion_variable" type="string">
+  Boolean post-call schema variable name used with `retry_on_goal_incomplete`.
+</ParamField>
+
+<ParamField body="fallback_channel" type="string">
+  Optional call→text follow-up after max call retries: `whatsapp` or `sms`.
+</ParamField>
+
+<ParamField body="fallback_whatsapp_sender_id" type="integer">
+  Required when `fallback_channel=whatsapp`.
+</ParamField>
+
+<ParamField body="fallback_whatsapp_template_id" type="integer">
+  Required when `fallback_channel=whatsapp`. Must be an approved template on that sender.
+</ParamField>
+
+<ParamField body="fallback_sms_from_phone_number_id" type="integer">
+  Required when `fallback_channel=sms`.
+</ParamField>
+
+<ParamField body="fallback_sms_body" type="string">
+  Required when `fallback_channel=sms`. Supports `{{variable}}` placeholders.
+</ParamField>
+
+<ParamField body="fallback_variable_mapping" type="object">
+  Maps WhatsApp template placeholders (e.g. `"1"`) to lead variable keys for the fallback send.
+</ParamField>
+
+#### WhatsApp campaigns
+
+<ParamField body="whatsapp_sender_id" type="integer">
+  Required for `channel=whatsapp`. Sender you own.
+</ParamField>
+
+<ParamField body="whatsapp_template_id" type="integer">
+  Required for `channel=whatsapp`. Approved template on that sender.
+</ParamField>
+
+<ParamField body="text_variable_mapping" type="object">
+  Maps template placeholders (e.g. `"1"`) to lead variable keys.
+</ParamField>
+
+<ParamField body="messages_per_minute" type="integer">
+  Per-campaign send rate (1–10). WhatsApp campaigns also share a **user-wide pool of 10** in-flight sends across all your active WhatsApp campaigns.
+</ParamField>
+
+#### SMS campaigns
+
+<ParamField body="sms_from_phone_number_id" type="integer">
+  Required for `channel=sms`. Must be SMS-capable and available to you.
+</ParamField>
+
+<ParamField body="sms_body" type="string">
+  Required for `channel=sms`. Max 1600 characters. Supports `{{variable}}` placeholders.
 </ParamField>
 
 ### Response
 
 <ResponseField name="message" type="string">
-  Success message confirming the campaign was created
+  Success message
 </ResponseField>
 
 <ResponseField name="data" type="object">
-  The created campaign data
-  <Expandable title="data properties">
-    <ResponseField name="id" type="integer">
-      The ID of the created campaign
-    </ResponseField>
-
-    <ResponseField name="name" type="string">
-      The name of the campaign
-    </ResponseField>
-
-    <ResponseField name="status" type="string">
-      The status of the campaign (starts as `draft`)
-    </ResponseField>
-
-    <ResponseField name="max_calls_in_parallel" type="integer">
-      Maximum number of simultaneous calls
-    </ResponseField>
-
-    <ResponseField name="mark_complete_when_no_leads" type="boolean">
-      Whether to mark the campaign as complete when there are no leads
-    </ResponseField>
-
-    <ResponseField name="allowed_hours_start_time" type="string">
-      Start of the allowed calling window
-    </ResponseField>
-
-    <ResponseField name="allowed_hours_end_time" type="string">
-      End of the allowed calling window
-    </ResponseField>
-
-    <ResponseField name="allowed_days" type="array">
-      Days of the week when calls are allowed
-    </ResponseField>
-
-    <ResponseField name="max_retries" type="integer">
-      Maximum number of retry attempts
-    </ResponseField>
-
-    <ResponseField name="retry_interval" type="integer">
-      Interval in minutes between retries
-    </ResponseField>
-
-    <ResponseField name="created_at" type="string">
-      Timestamp when the campaign was created
-    </ResponseField>
-
-    <ResponseField name="updated_at" type="string">
-      Timestamp when the campaign was last updated
-    </ResponseField>
-  </Expandable>
+  Created campaign (same shape as [Get campaign](/api-reference/campaigns/get-campaign)), including `channel`, schedule, text config, and fallback fields.
 </ResponseField>
 
-### Error Responses
+### Error responses
 
-<ResponseField name="403 Forbidden">
-  <Expandable title="Error Response">
-    <ResponseField name="message" type="string">
-      Error message when the user has reached their plan's campaign limit
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="404 Not Found">
-  <Expandable title="Error Response">
-    <ResponseField name="message" type="string">
-      Error message when the specified assistant is not found or is not an outbound assistant
-    </ResponseField>
-  </Expandable>
-</ResponseField>
-
-<ResponseField name="422 Validation Error">
-  <Expandable title="Error Response">
-    <ResponseField name="message" type="string">
-      Error message indicating validation failure
-    </ResponseField>
-    <ResponseField name="errors" type="object">
-      Detailed validation errors for each field
-    </ResponseField>
-  </Expandable>
+<ResponseField name="422 Unprocessable Entity">
+  Plan limit, invalid assistant/sender/template, disabled channel, or validation errors.
 </ResponseField>
 
 <ResponseExample>
 
-```json 201 Created
+```json 201 Created (call)
 {
   "message": "Campaign created successfully",
   "data": {
     "id": 1,
     "name": "Product Demo Campaign",
+    "channel": "call",
     "status": "draft",
+    "assistant_id": 42,
+    "timezone": "Europe/Bucharest",
     "max_calls_in_parallel": 3,
-    "mark_complete_when_no_leads": true,
-    "allowed_hours_start_time": "09:00:00",
-    "allowed_hours_end_time": "17:00:00",
-    "allowed_days": [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday"
-    ],
+    "messages_per_minute": null,
+    "schedule_windows": [{ "start": "09:00", "end": "18:00" }],
+    "scheduled_start_at": null,
+    "allowed_hours_start_time": "09:00",
+    "allowed_hours_end_time": "18:00",
+    "allowed_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "max_retries": 3,
     "retry_interval": 60,
-    "created_at": "2026-02-23T10:00:00.000000Z",
-    "updated_at": "2026-02-23T10:00:00.000000Z"
+    "retry_on_voicemail": false,
+    "retry_on_goal_incomplete": false,
+    "goal_completion_variable": null,
+    "mark_complete_when_no_leads": true,
+    "phone_number_ids": [11, 12],
+    "whatsapp_sender_id": null,
+    "whatsapp_template_id": null,
+    "sms_from_phone_number_id": null,
+    "sms_body": null,
+    "text_variable_mapping": null,
+    "fallback_channel": "whatsapp",
+    "fallback_whatsapp_sender_id": 7,
+    "fallback_whatsapp_template_id": 15,
+    "fallback_sms_from_phone_number_id": null,
+    "fallback_sms_body": null,
+    "fallback_variable_mapping": { "1": "customer_name" },
+    "created_at": "2026-07-24 18:00:00",
+    "updated_at": "2026-07-24 18:00:00"
   }
 }
 ```
 
-```json 403 Forbidden
+```json 201 Created (whatsapp)
 {
-  "message": "You have reached the maximum number of campaigns allowed by your plan."
-}
-```
-
-```json 404 Not Found
-{
-  "message": "Assistant not found or not an outbound assistant."
-}
-```
-
-```json 422 Validation Error
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "name": [
-      "The name field is required."
-    ],
-    "assistant_id": [
-      "The assistant id field is required."
-    ]
+  "message": "Campaign created successfully",
+  "data": {
+    "id": 2,
+    "name": "WhatsApp Follow-up",
+    "channel": "whatsapp",
+    "status": "draft",
+    "assistant_id": null,
+    "messages_per_minute": 10,
+    "schedule_windows": [{ "start": "09:00", "end": "20:00" }],
+    "whatsapp_sender_id": 7,
+    "whatsapp_template_id": 15,
+    "text_variable_mapping": { "1": "customer_name" },
+    "fallback_channel": null
   }
 }
 ```

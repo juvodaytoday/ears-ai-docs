@@ -47,6 +47,7 @@ Send a free-form text message to a customer within the 24-hour messaging window.
 **Use Cases:**
 - Send immediate follow-up to recent conversations
 - Deliver time-sensitive information
+- Send a file to the customer (menu, brochure, invoice, photo)
 - Respond to customer inquiries automatically
 
 **Configuration:**
@@ -55,7 +56,13 @@ Send a free-form text message to a customer within the 24-hour messaging window.
 |-------|-------------|
 | **Sender** | Select your WhatsApp sender |
 | **Recipient Phone** | Customer phone number (E.164 format) |
-| **Message** | Message content (max 4096 characters) |
+| **Message** | Message text (max 4096 characters). Optional when a Media URL is set — it becomes the caption |
+| **Media URL** | Optional public URL of a file to send (image, audio, video, or document) |
+| **Filename** | Optional filename shown to the recipient (mainly for documents) |
+
+<Tip>
+**Sending files** — Set **Media URL** to a publicly reachable link to the file (a document, image, audio, or video from your storage, CRM, or catalog). WhatsApp fetches it at send time, and earlier steps in your flow can build this URL dynamically (e.g. look up the invoice for an order). The file is delivered to the customer inside the same conversation.
+</Tip>
 
 ### Generate AI Reply
 
