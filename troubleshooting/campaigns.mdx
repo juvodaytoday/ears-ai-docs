@@ -34,17 +34,30 @@ Quick solutions for common campaign problems and performance optimization tips.
 3. Check that leads aren't all marked as completed
 4. Ensure "Mark complete when no leads" setting matches your needs
 
-## No Calls Being Made
+## No Calls / Messages Being Sent
 
-### Outside Allowed Hours
-**Issue:** Campaign shows as running but no calls happening
+### Outside Allowed Hours / Schedule Windows
+**Issue:** Campaign shows as running but nothing is dialing or sending
 
 **Check:**
-- Current time is within allowed calling hours
-- Today is an allowed calling day
-- Assistant timezone matches expected schedule
+- Current time is inside at least one **schedule window** (or legacy start/end)
+- Overnight windows: if end is earlier than start (e.g. 16:00→02:00), midday is *outside* the window
+- Today is an allowed day
+- Campaign timezone matches the schedule you expect
 
-**Solution:** Adjust allowed hours or wait until next allowed time window
+**Solution:** Adjust schedule windows or wait until the next allowed interval
+
+### WhatsApp Campaign Not Sending
+**Check:**
+- Sender and template are still approved and owned by your account
+- Chat credits / balance are sufficient
+- Template variable mapping has values for every lead (blank mapped values block sends)
+- You have not hit the **user-wide pool of 10** in-flight WhatsApp campaign sends (multiple WhatsApp campaigns share this pool)
+
+**Solution:** Top up chat credits, fix mapping, or wait for in-flight sends to finish
+
+### SMS Campaign Won't Start
+SMS campaigns may be temporarily disabled on the platform. If start fails with an unavailable-channel message, use WhatsApp or call campaigns until SMS is re-enabled.
 
 ### All Leads Called
 **Issue:** Campaign appears idle

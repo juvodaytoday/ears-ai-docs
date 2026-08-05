@@ -1,0 +1,70 @@
+---
+title: "Retry automation run"
+api: "POST /user/automate/flows/{id}/runs/{run_id}/retry"
+description: "Retry a failed run from its failed step"
+---
+
+This endpoint retries a failed execution **from its failed step**: steps that already succeeded are not re-executed, so any side effect they already caused (an email already sent, a row already written) is not repeated. Use it after fixing what made the run fail — a reconnected account, a recovered external API — instead of waiting for the next trigger event. The failed step and everything after it then run for real, completing the original event's work.
+
+Take the run's id from [List automation runs](/api-reference/automations/list-automation-runs). A retry resumes the **same** run — it does not create a new one.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+<ParamField path="run_id" type="string" required>
+  The ID of the failed run (from [List automation runs](/api-reference/automations/list-automation-runs))
+</ParamField>
+
+This endpoint takes no request body.
+
+### Response
+
+<ResponseField name="run_id" type="string">
+  The retried run's ID (the same run that was passed in)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  The run's status right after the retry (e.g. `RUNNING`, or `SUCCEEDED` when it finished instantly)
+</ResponseField>
+
+<ResponseField name="note" type="string">
+  Confirmation that already-succeeded steps were not re-executed
+</ResponseField>
+
+A missing automation or run — or one that does not belong to your account — returns a `404`.
+
+### Error codes (`422`)
+
+| `error` | Meaning |
+|---|---|
+| `retry_no_op` | The retry did not resume the run — its saved state is stale, most commonly because the run passed through a Delay step before failing. Such a run cannot be resumed as-is; the message lists the safe options (repair the automation, or wait for its next real trigger event). |
+| `retry_failed` | The retry could not be started — try again shortly. |
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "run_id": "yHhXbqWj3zJZ5ztDNfUry",
+  "status": "RUNNING",
+  "note": "Retried FROM the failed step — steps that already succeeded were NOT re-executed, so their side effects were not repeated."
+}
+```
+
+```json 422 Response (not resumable)
+{
+  "message": "The retry did not resume this run (its status is still 'FAILED') — its saved state is likely stale, most commonly because the run passed through a Delay step before failing. This run cannot be resumed as-is. To force a fresh full run (re-executes EVERY step, including any that already sent a message/email/call — get the user's explicit confirmation first, then rebuild via update-automation's repair path), or otherwise wait for the automation's next real trigger event.",
+  "error": "retry_no_op"
+}
+```
+
+```json 404 Response
+{
+  "message": "Run not found for this automation.",
+  "error": "not_found"
+}
+```
+
+</ResponseExample>

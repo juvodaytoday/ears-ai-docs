@@ -1,0 +1,75 @@
+---
+title: "Restore previous version"
+api: "POST /user/automate/flows/{id}/restore"
+description: "Roll an automation back to its previous published version"
+---
+
+This endpoint rolls an automation back to the version published immediately before the current one and re-publishes it — the undo for an update that made things worse. Only the previous version is supported. An automation that was turned off stays off after the restore.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+This endpoint takes no request body.
+
+### Response
+
+<ResponseField name="automation_id" type="string">
+  The automation's ID
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  The automation's name after the restore
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  `enabled` or `disabled` — the on/off state the automation had going into the restore is preserved
+</ResponseField>
+
+<ResponseField name="restored_version_id" type="string">
+  The ID of the version that is now live
+</ResponseField>
+
+<ResponseField name="note" type="string">
+  Confirmation that the previous version was restored and re-published
+</ResponseField>
+
+A missing automation — or one that does not belong to your account — returns a `404`.
+
+### Error codes (`422`)
+
+| `error` | Meaning |
+|---|---|
+| `no_previous_version` | There is no earlier version of this automation to roll back to. |
+| `rollback_failed` | The previous version could not be restored — nothing changed. |
+| `publish_failed` | The previous version was restored as the draft but could not be published, so it is not live yet — publish it in the app or retry. |
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "automation_id": "f4EaLhOW2zoEsXXSOJP2r",
+  "name": "Order lookup",
+  "status": "enabled",
+  "restored_version_id": "8auMJQtqBnE1X8ZP7WVnI",
+  "note": "Rolled back to the previous published version and re-published it live."
+}
+```
+
+```json 422 Response (nothing to roll back to)
+{
+  "message": "There is no earlier version of this automation to roll back to.",
+  "error": "no_previous_version"
+}
+```
+
+```json 404 Response
+{
+  "message": "Automation not found, or it does not belong to your account.",
+  "error": "not_found"
+}
+```
+
+</ResponseExample>

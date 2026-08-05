@@ -1,0 +1,114 @@
+---
+title: "Update automation"
+api: "PUT /user/automate/flows/{id}"
+description: "Rename an automation, turn it on or off, or repair it with a corrected definition"
+---
+
+This endpoint has two modes:
+
+- **Rename / toggle** — pass `name` and/or `enabled` to rename the automation or turn it on/off.
+- **Repair** — pass a corrected `flow` definition and the automation is rebuilt in place, re-tested with a **real run**, and re-activated only when the test passes. Use this after diagnosing a failure with [Get automation](/api-reference/automations/get-automation) and [List automation runs](/api-reference/automations/list-automation-runs).
+
+To undo a repair that made things worse, roll back to the previous published version with [Restore previous version](/api-reference/automations/restore-automation).
+
+<Warning>
+A repair definition **replaces the whole automation** — it is never merged. Read the current definition first and resend the complete chain, including every step that must stay; steps you leave out are deleted. The repair test run executes the automation for real, so `confirm_side_effects: true` is required again when the corrected definition contains sending steps.
+</Warning>
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+### Request body
+
+<ParamField body="name" type="string" optional>
+  A new name for the automation (max 255 characters). In repair mode, the current name is kept when omitted.
+</ParamField>
+
+<ParamField body="enabled" type="boolean" optional>
+  `true` to turn the automation on, `false` to turn it off
+</ParamField>
+
+<ParamField body="flow" type="object" optional>
+  Repair mode: the corrected full definition, in the same format as [Create automation](/api-reference/automations/create-automation) (`{"trigger": {...}, "steps": [...]}`). Max 1 MB.
+</ParamField>
+
+<ParamField body="sample" type="object" optional>
+  Sample payload for the repair test run (for assistant events, the canonical sample is used when omitted). Max 256 KB.
+</ParamField>
+
+<ParamField body="assistant_id" type="integer" optional>
+  For repairs of assistant-event automations: the assistant to (re)attach to. Usually already carried inside the definition's trigger.
+</ParamField>
+
+<ParamField body="confirm_side_effects" type="boolean" optional>
+  Required (`true`) when the corrected definition contains steps that send messages or emails, start calls, or make non-GET HTTP requests
+</ParamField>
+
+A request with none of `name`, `enabled` or `flow` returns a `422` asking for at least one of them.
+
+### Response — rename / toggle
+
+<ResponseField name="data" type="object">
+  The refreshed automation summary
+
+  <Expandable title="data properties">
+    <ResponseField name="id" type="string">
+      The automation ID
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      The automation's (possibly new) name
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      `enabled` or `disabled`
+    </ResponseField>
+
+    <ResponseField name="updated" type="boolean">
+      Whether every requested change was applied
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response — repair
+
+The same envelope as [Create automation](/api-reference/automations/create-automation) (`automation_id`, `status`, `test`, `response`, `binding`), without `webhook_url` — a repaired automation keeps its original webhook URL. Returned with HTTP `200`; `status` is `active`, `active_untested` or `test_failed`. A repair whose test fails leaves the automation disabled; a repair rejected before the test run (e.g. `no_steps`) leaves the existing automation untouched.
+
+A missing automation — or one that does not belong to your account — returns a `404` with `{"message": "Automation not found"}`.
+
+<ResponseExample>
+
+```json 200 Response (rename + disable)
+{
+  "data": {
+    "id": "f4EaLhOW2zoEsXXSOJP2r",
+    "name": "Order lookup v2",
+    "status": "disabled",
+    "updated": true
+  }
+}
+```
+
+```json 200 Response (repair, test passed)
+{
+  "automation_id": "f4EaLhOW2zoEsXXSOJP2r",
+  "status": "active",
+  "test": {
+    "run_status": "SUCCEEDED",
+    "steps": []
+  },
+  "response": null,
+  "binding": null
+}
+```
+
+```json 404 Response
+{
+  "message": "Automation not found"
+}
+```
+
+</ResponseExample>

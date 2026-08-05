@@ -1,46 +1,49 @@
 ---
 title: "Creating a Campaign"
 icon: "plus"
-description: "Step-by-step guide to setting up your first automated calling campaign"
+description: "Step-by-step guide to setting up call, WhatsApp, or SMS campaigns"
 ---
 
-Create and configure automated calling campaigns to efficiently reach multiple leads with your AI assistant.
+Create and configure a campaign to reach many leads on phone, WhatsApp, or SMS.
 
 ## Prerequisites
 
-Before creating a campaign, ensure you have:
-- **AI assistant** configured for outbound calls
-- **Phone number** assigned to your assistant  
-- **Account balance** sufficient for call costs
+Depends on the channel:
+- **Call:** OUTBOUND assistant with a phone number, minutes balance
+- **WhatsApp:** Connected sender + approved template, chat credits
+- **SMS:** SMS-capable from-number (SMS campaigns may be temporarily unavailable)
 - **Leads ready** to import or add manually
 
 ## Campaign Setup
 
 ### 1. Basic Information
 
-**Campaign Name:** Choose a descriptive name for easy identification
-**Assistant Selection:** Select which AI assistant will make the calls
+**Campaign Name:** Descriptive name for easy identification  
+**Channel:** `Call`, `WhatsApp`, or `SMS`  
+**Call only — Assistant:** Which OUTBOUND AI assistant will dial
 
 <Note>
-The assistant's configuration (voice, prompt, tools) will be used for all campaign calls.
+For call campaigns, the assistant's voice, prompt, and tools are used on every dial. WhatsApp campaigns send templates; they do not need an outbound assistant.
 </Note>
 
 ### 2. Scheduling Configuration
 
-#### Allowed Calling Hours
-Set when your campaign can make calls:
-- **Start time:** Earliest time to begin calling (default: 00:00)
-- **End time:** Latest time to stop calling (default: 23:59)
-- **Timezone:** Uses assistant's configured timezone
+#### Schedule windows
+Prefer **one or more daily windows** (`start` / `end` as HH:MM):
+- Multiple intervals allowed (e.g. 09:00–12:00 and 14:00–18:00)
+- Overnight windows when end is earlier than start (e.g. 16:00→02:00)
+- Optional **scheduled start** datetime to auto-start later
+
+Legacy single start/end times still work and map to one window.
 
 #### Allowed Days
-Select which days of the week to make calls:
+Select which days of the week to send/call:
 - **Default:** Monday through Sunday
 - **Business only:** Monday through Friday
 - **Custom:** Choose specific days
 
 <Tip>
-**Recommendation:** For business calls, use Monday-Friday 9:00 AM - 6:00 PM in the prospect's timezone.
+**Recommendation:** For business outreach, use Monday–Friday daytime windows in the prospect's timezone.
 </Tip>
 
 ### 3. Retry Settings
@@ -82,19 +85,34 @@ Select which days of the week to make calls:
 - Automatic sync with external lead sources
 
 #### Secondary Contacts
-Add additional phone numbers for the same lead:
+Call campaigns only — additional phone numbers for the same lead:
 - **Use case:** Multiple decision-makers, backup contacts
-- **Logic:** Campaign will try all numbers for each lead
-- **Status:** Independent tracking for each contact
+- **Logic:** Campaign tries secondary numbers if the primary does not connect
+- **Not available** on WhatsApp/SMS campaigns
+
+### 5. WhatsApp / SMS (text channels)
+
+**WhatsApp**
+- Select sender + approved template
+- Map template placeholders to lead variables
+- Set **messages per minute** (1–10). Across all your active WhatsApp campaigns, at most **10** sends are in flight at once.
+
+**SMS**
+- Select SMS-capable from-number and message body (`{{variable}}` placeholders)
+- Rate via messages per minute
+
+**Call → text fallback (call campaigns)**
+- After a lead hits max call retries, optionally send a WhatsApp template or SMS once
+- Missing chat credits skip that fallback send; the call campaign keeps dialing other leads
 
 ## Starting Your Campaign
 
 ### Pre-launch Checklist
-- [ ] Assistant has phone number configured
-- [ ] Sufficient account balance
+- [ ] Channel config complete (assistant / WhatsApp template / SMS number)
+- [ ] Sufficient balance (minutes and/or chat credits)
 - [ ] Leads added with valid phone numbers
-- [ ] Schedule configured appropriately
-- [ ] Retry logic matches campaign goals
+- [ ] Schedule windows and days set
+- [ ] Retry (and optional fallback) match your goals
 
 ### Launch Process
 1. **Review settings** one final time

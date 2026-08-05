@@ -1,0 +1,100 @@
+---
+title: "Get automation"
+api: "GET /user/automate/flows/{id}"
+description: "Get a single automation, including its full definition"
+---
+
+This endpoint returns a single automation you own, including its full definition (the trigger and its chained steps) so you can inspect or repair it.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="include_secrets" type="boolean" optional>
+  By default, credential-bearing values inside the definition (API keys, tokens, `Authorization` headers) are masked as `••• hidden`. Pass `true` to return them unmasked.
+</ParamField>
+
+### Response
+
+<ResponseField name="data" type="object">
+  The automation
+
+  <Expandable title="data properties">
+    <ResponseField name="id" type="string">
+      The unique ID of the automation
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      The display name of the automation
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      `enabled` or `disabled`
+    </ResponseField>
+
+    <ResponseField name="updated_at" type="string">
+      When the automation was last updated
+    </ResponseField>
+
+    <ResponseField name="definition" type="object">
+      The automation's definition: the trigger object with its steps chained under `nextAction`. This is the artifact you edit and send back through [Update automation](/api-reference/automations/update-automation) to repair or extend the automation. See [Create automation](/api-reference/automations/create-automation) for the definition format.
+    </ResponseField>
+
+    <ResponseField name="binding" type="object | null">
+      When the automation is attached to an assistant event: `{type, assistant_id, assistant_name}` (see [List automations](/api-reference/automations/list-automations)). Otherwise `null`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+A missing automation — or one that does not belong to your account — returns a `404` with `{"message": "Automation not found"}`.
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "data": {
+    "id": "f4EaLhOW2zoEsXXSOJP2r",
+    "name": "Order lookup",
+    "status": "enabled",
+    "updated_at": "2026-07-24T18:23:57.259Z",
+    "definition": {
+      "name": "trigger",
+      "type": "PIECE_TRIGGER",
+      "displayName": "Catch Webhook",
+      "settings": {
+        "pieceName": "@activepieces/piece-webhook",
+        "triggerName": "catch_webhook"
+      },
+      "nextAction": {
+        "name": "step_1",
+        "type": "PIECE",
+        "displayName": "Look up the order",
+        "settings": {
+          "pieceName": "@activepieces/piece-http",
+          "actionName": "send_request",
+          "input": {
+            "url": "https://api.example.com/orders",
+            "method": "GET",
+            "headers": {
+              "Authorization": "••• hidden"
+            }
+          }
+        }
+      }
+    },
+    "binding": null
+  }
+}
+```
+
+```json 404 Response
+{
+  "message": "Automation not found"
+}
+```
+
+</ResponseExample>

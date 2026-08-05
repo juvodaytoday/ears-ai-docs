@@ -1,64 +1,145 @@
 ---
 title: "List campaigns"
 api: "GET /user/campaigns"
-description: "List all campaigns"
+description: "List all campaigns (call, WhatsApp, SMS)"
 ---
 
-This endpoint allows you to list all campaigns.
+Returns every campaign you own, including channel, schedule windows, WhatsApp/SMS config, and optional call→text fallback settings.
 
-### Response fields
+### Response
 
-<ResponseField name="campaigns" type="array">
-  <Expandable title="properties">
-    <ResponseField name="id" type="integer">
-      The id of the campaign
-    </ResponseField>
+Returns a JSON **array** of campaign objects.
 
-    <ResponseField name="name" type="string">
-      The name of the campaign
-    </ResponseField>
+<ResponseField name="id" type="integer">
+  Campaign ID
+</ResponseField>
 
-    <ResponseField name="status" type="string">
-      The status of the campaign
-    </ResponseField>
+<ResponseField name="name" type="string">
+  Campaign name
+</ResponseField>
 
-    <ResponseField name="max_calls_in_parallel" type="integer">
-      Maximum number of calls that can be made in parallel
-    </ResponseField>
+<ResponseField name="channel" type="string">
+  `call`, `whatsapp`, or `sms`
+</ResponseField>
 
-    <ResponseField name="mark_complete_when_no_leads" type="boolean">
-      Whether to mark the campaign as complete when there are no leads
-    </ResponseField>
+<ResponseField name="status" type="string">
+  e.g. `draft`, `scheduled`, `in-progress`, `paused`, `completed`
+</ResponseField>
 
-    <ResponseField name="allowed_hours_start_time" type="string">
-      The start time for allowed calling hours
-    </ResponseField>
+<ResponseField name="assistant_id" type="integer">
+  OUTBOUND assistant ID (call campaigns). `null` for text campaigns.
+</ResponseField>
 
-    <ResponseField name="allowed_hours_end_time" type="string">
-      The end time for allowed calling hours
-    </ResponseField>
+<ResponseField name="timezone" type="string">
+  IANA timezone for the send/call window
+</ResponseField>
 
-    <ResponseField name="allowed_days" type="array">
-      The days of the week when calls are allowed
-    </ResponseField>
+<ResponseField name="max_calls_in_parallel" type="integer">
+  Concurrent call slots (call campaigns)
+</ResponseField>
 
-    <ResponseField name="max_retries" type="integer">
-      Maximum number of retry attempts for failed calls
-    </ResponseField>
+<ResponseField name="messages_per_minute" type="integer">
+  Per-campaign text send rate (WhatsApp/SMS). WhatsApp also uses a user-wide in-flight pool of 10.
+</ResponseField>
 
-    <ResponseField name="retry_interval" type="integer">
-      Interval in seconds between retry attempts
-    </ResponseField>
+<ResponseField name="schedule_windows" type="array">
+  Daily windows `[{ "start": "HH:MM", "end": "HH:MM" }]`. Overnight allowed when end &lt; start.
+</ResponseField>
 
-    <ResponseField name="created_at" type="string">
-      The timestamp when the campaign was created
-    </ResponseField>
+<ResponseField name="scheduled_start_at" type="string">
+  ISO datetime for auto-start, or `null`
+</ResponseField>
 
-    <ResponseField name="updated_at" type="string">
-      The timestamp when the campaign was last updated
-    </ResponseField>
+<ResponseField name="allowed_hours_start_time" type="string">
+  Legacy window start (kept in sync with the first schedule window)
+</ResponseField>
 
-  </Expandable>
+<ResponseField name="allowed_hours_end_time" type="string">
+  Legacy window end
+</ResponseField>
+
+<ResponseField name="allowed_days" type="array">
+  Weekdays when sending/calling is allowed
+</ResponseField>
+
+<ResponseField name="max_retries" type="integer">
+  Max retries per lead
+</ResponseField>
+
+<ResponseField name="retry_interval" type="integer">
+  Minutes between retries
+</ResponseField>
+
+<ResponseField name="retry_on_voicemail" type="boolean">
+  Call campaigns: retry on voicemail
+</ResponseField>
+
+<ResponseField name="retry_on_goal_incomplete" type="boolean">
+  Call campaigns: retry until goal variable is true
+</ResponseField>
+
+<ResponseField name="goal_completion_variable" type="string">
+  Boolean post-call variable name, or `null`
+</ResponseField>
+
+<ResponseField name="mark_complete_when_no_leads" type="boolean">
+  Auto-complete when no work remains
+</ResponseField>
+
+<ResponseField name="phone_number_ids" type="array">
+  Outbound from-number IDs (call campaigns)
+</ResponseField>
+
+<ResponseField name="whatsapp_sender_id" type="integer">
+  WhatsApp sender ID, or `null`
+</ResponseField>
+
+<ResponseField name="whatsapp_template_id" type="integer">
+  WhatsApp template ID, or `null`
+</ResponseField>
+
+<ResponseField name="sms_from_phone_number_id" type="integer">
+  SMS from-number ID, or `null`
+</ResponseField>
+
+<ResponseField name="sms_body" type="string">
+  SMS body, or `null`
+</ResponseField>
+
+<ResponseField name="text_variable_mapping" type="object">
+  WhatsApp template placeholder → lead variable map, or `null`
+</ResponseField>
+
+<ResponseField name="fallback_channel" type="string">
+  Call→text fallback channel (`whatsapp` / `sms`), or `null`
+</ResponseField>
+
+<ResponseField name="fallback_whatsapp_sender_id" type="integer">
+  Fallback WhatsApp sender, or `null`
+</ResponseField>
+
+<ResponseField name="fallback_whatsapp_template_id" type="integer">
+  Fallback WhatsApp template, or `null`
+</ResponseField>
+
+<ResponseField name="fallback_sms_from_phone_number_id" type="integer">
+  Fallback SMS from-number, or `null`
+</ResponseField>
+
+<ResponseField name="fallback_sms_body" type="string">
+  Fallback SMS body, or `null`
+</ResponseField>
+
+<ResponseField name="fallback_variable_mapping" type="object">
+  Fallback WhatsApp variable map, or `null`
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  Created timestamp in your account timezone
+</ResponseField>
+
+<ResponseField name="updated_at" type="string">
+  Updated timestamp in your account timezone
 </ResponseField>
 
 <ResponseExample>
@@ -67,25 +148,51 @@ This endpoint allows you to list all campaigns.
 [
   {
     "id": 1,
-    "name": "Test campaing",
-    "status": "draft",
+    "name": "Product Demo Campaign",
+    "channel": "call",
+    "status": "in-progress",
+    "assistant_id": 42,
+    "timezone": "Europe/Bucharest",
     "max_calls_in_parallel": 3,
-    "mark_complete_when_no_leads": true,
-    "allowed_hours_start_time": "00:00:00",
-    "allowed_hours_end_time": "23:59:00",
-    "allowed_days": [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday"
-    ],
+    "messages_per_minute": null,
+    "schedule_windows": [{ "start": "09:00", "end": "18:00" }],
+    "scheduled_start_at": null,
+    "allowed_hours_start_time": "09:00:00",
+    "allowed_hours_end_time": "18:00:00",
+    "allowed_days": ["monday", "tuesday", "wednesday", "thursday", "friday"],
     "max_retries": 3,
     "retry_interval": 60,
-    "created_at": "2025-05-29T07:18:34.000000Z",
-    "updated_at": "2025-05-29T07:18:34.000000Z"
+    "retry_on_voicemail": false,
+    "retry_on_goal_incomplete": false,
+    "goal_completion_variable": null,
+    "mark_complete_when_no_leads": true,
+    "phone_number_ids": [11],
+    "whatsapp_sender_id": null,
+    "whatsapp_template_id": null,
+    "sms_from_phone_number_id": null,
+    "sms_body": null,
+    "text_variable_mapping": null,
+    "fallback_channel": "whatsapp",
+    "fallback_whatsapp_sender_id": 7,
+    "fallback_whatsapp_template_id": 15,
+    "fallback_sms_from_phone_number_id": null,
+    "fallback_sms_body": null,
+    "fallback_variable_mapping": { "1": "customer_name" },
+    "created_at": "2026-07-24 10:00:00",
+    "updated_at": "2026-07-24 12:00:00"
+  },
+  {
+    "id": 2,
+    "name": "WhatsApp Follow-up",
+    "channel": "whatsapp",
+    "status": "draft",
+    "assistant_id": null,
+    "messages_per_minute": 10,
+    "schedule_windows": [{ "start": "09:00", "end": "20:00" }],
+    "whatsapp_sender_id": 7,
+    "whatsapp_template_id": 15,
+    "text_variable_mapping": { "1": "customer_name" },
+    "fallback_channel": null
   }
 ]
 ```

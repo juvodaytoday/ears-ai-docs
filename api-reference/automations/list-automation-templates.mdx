@@ -1,0 +1,146 @@
+---
+title: "List automation templates"
+api: "GET /user/automate/templates"
+description: "List the ready-made automation templates and the parameters each one needs"
+---
+
+This endpoint lists the curated automation templates: ready-made automations you apply with [Apply automation template](/api-reference/automations/apply-automation-template) by supplying a few parameters, instead of writing a definition from scratch. Each entry describes its parameters, the account connections it needs, whether it attaches to an assistant, and whether it sends real messages during its test run.
+
+### Available templates
+
+| Key | What it does | Assistant | Sends for real | Connections | Params (\* = required) |
+|---|---|---|---|---|---|
+| `post-call-qualified-to-sheets` | Save qualified leads to Google Sheets after each call | yes | no | `google-sheets` | `spreadsheet_id`\*, `qualified_variable` |
+| `post-call-transcript-email` | Email the call transcript after each call | yes | yes | `gmail` | `recipient_email`\* |
+| `post-call-hot-lead-alert` | Hot lead email alert after each call | yes | yes | `gmail` | `alert_email`\*, `hot_variable` |
+| `post-call-sms-followup` | SMS follow-up after each call | yes | yes | — | `from_phone_id`\*, `message`\* |
+| `post-call-whatsapp-confirmation` | WhatsApp confirmation after each call | yes | yes | — | `sender_id`\*, `whatsapp_template`\*, `variable_1` |
+| `post-call-crm-note-http` | Log every call to your CRM / any API | yes | yes | — | `endpoint_url`\*, `auth_header`, `auth_value` |
+| `post-call-callback` | Call the customer back at the time they asked for | yes | yes | — | `callback_variable`, `time_variable`, `from_timezone` |
+| `inbound-caller-lookup-http` | Recognize inbound callers via your API | yes | no | — | `lookup_url`\*, `api_key_header`, `api_key`, `phone_format` |
+| `conversation-ended-summary-email` | Email a summary when a chat ends | yes | yes | `gmail` | `recipient_email`\* |
+| `lead-intake-webhook` | New lead from any system, call them automatically | no | yes | — | `campaign_id`\* |
+| `midcall-http-lookup` | Mid-call lookup in an external API | no | no | — | `lookup_url`\*, `auth_header_value` |
+| `sheet-rows-to-campaign` | Call the leads added to a Google Sheet | no | yes | `google-sheets` | `spreadsheet_id`\*, `campaign_id`\*, `phone_column`, `name_column`, `minutes` |
+| `sheet-rows-to-whatsapp-daily` | Daily WhatsApp template to leads from a Google Sheet | no | yes | `google-sheets` | `spreadsheet_id`\*, `sender_id`\*, `whatsapp_template`\*, `phone_column`, `name_column`, `hour`, `timezone` |
+| `calcom-call-before-appointment` | Call the customer before their Cal.com appointment | no | yes | `cal-com` | `assistant_id`\*, `hours_before`, `phone_expression` |
+| `calcom-cancel-reschedule-midcall` | Cancel or reschedule Cal.com appointments during a call | no | yes | — | `attendee_email`\* |
+| `ghl-appointment-manage-midcall` | Cancel or reschedule GoHighLevel appointments during a call | no | no | `lead-connector` | `timezone` |
+
+Required connections are one-time account links (Google Sheets, Gmail, Cal.com, …) made in the app on the Automate page, under Connections.
+
+### Response
+
+<ResponseField name="data" type="array">
+  The template library
+
+  <Expandable title="template properties">
+    <ResponseField name="key" type="string">
+      The template key — pass it in the URL of [Apply automation template](/api-reference/automations/apply-automation-template)
+    </ResponseField>
+
+    <ResponseField name="name" type="string">
+      The template's name (also the default name of the automation it creates)
+    </ResponseField>
+
+    <ResponseField name="description" type="string">
+      What the resulting automation does
+    </ResponseField>
+
+    <ResponseField name="use_when" type="string">
+      When this template is the right choice
+    </ResponseField>
+
+    <ResponseField name="binding" type="string | null">
+      The assistant event the resulting automation attaches to (`post_call`, `inbound`, `conversation_ended`), or `null` for templates that do not attach to an assistant event
+    </ResponseField>
+
+    <ResponseField name="requires_assistant" type="boolean">
+      Whether `assistant_id` is required when applying it
+    </ResponseField>
+
+    <ResponseField name="required_connections" type="array">
+      Account connections that must exist before applying (e.g. `google-sheets`, `gmail`)
+    </ResponseField>
+
+    <ResponseField name="side_effects" type="boolean">
+      Whether the resulting automation really sends messages / starts calls — applying it requires `confirm_side_effects: true`
+    </ResponseField>
+
+    <ResponseField name="params" type="array">
+      The parameters the template needs
+
+      <Expandable title="param properties">
+        <ResponseField name="key" type="string">
+          The parameter key to send in `params` when applying
+        </ResponseField>
+
+        <ResponseField name="label" type="string">
+          Human-readable label
+        </ResponseField>
+
+        <ResponseField name="description" type="string">
+          What the value is and where to find it
+        </ResponseField>
+
+        <ResponseField name="required" type="boolean">
+          Whether the parameter must be supplied
+        </ResponseField>
+
+        <ResponseField name="default" type="string">
+          The value used when the parameter is omitted (optional parameters only)
+        </ResponseField>
+
+        <ResponseField name="example" type="string">
+          An example value — for illustration only, never apply a template with example values
+        </ResponseField>
+
+        <ResponseField name="auto" type="string">
+          Present on some optional parameters: how the value is filled automatically when omitted (e.g. `assistant_timezone` — the supplied assistant's own timezone)
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="test_sample" type="object">
+      Present on some templates: the sample payload their test run uses
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseExample>
+
+```json 200 Response (truncated)
+{
+  "data": [
+    {
+      "key": "post-call-qualified-to-sheets",
+      "name": "Save qualified leads to Google Sheets",
+      "description": "After each call, if the AI marked the caller as qualified, appends a row (phone, name, summary, status) to your Google Sheet.",
+      "use_when": "The user wants qualified calls or call outcomes collected in a spreadsheet automatically.",
+      "binding": "post_call",
+      "requires_assistant": true,
+      "required_connections": ["google-sheets"],
+      "side_effects": false,
+      "params": [
+        {
+          "key": "spreadsheet_id",
+          "label": "Google Spreadsheet ID",
+          "description": "The spreadsheet to append rows to.",
+          "required": true,
+          "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz"
+        },
+        {
+          "key": "qualified_variable",
+          "label": "Qualified variable name",
+          "description": "The post-call variable checked for true before saving (the assistant must extract it).",
+          "required": false,
+          "default": "status",
+          "example": "qualified"
+        }
+      ]
+    }
+  ]
+}
+```
+
+</ResponseExample>

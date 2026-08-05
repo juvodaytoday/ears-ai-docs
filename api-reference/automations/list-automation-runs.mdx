@@ -1,0 +1,128 @@
+---
+title: "List automation runs"
+api: "GET /user/automate/flows/{id}/runs"
+description: "List an automation's recent executions, or one execution's step-by-step detail"
+---
+
+This endpoint lists an automation's recent executions (newest first). Pass `run_id` to get one execution's step-by-step detail with a per-step classification — this is your debugger when an automation is failing.
+
+Once you have fixed what made a run fail, retry it from its failed step with [Retry automation run](/api-reference/automations/retry-automation-run) — take the run's id from this list.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="run_id" type="string" optional>
+  A run ID from the list — returns that run's step-by-step detail instead of the list
+</ParamField>
+
+<ParamField query="limit" type="integer" optional>
+  How many recent runs to list (1–20, default 10)
+</ParamField>
+
+### Response — list (no `run_id`)
+
+<ResponseField name="runs" type="array">
+  The automation's recent executions, newest first
+
+  <Expandable title="run properties">
+    <ResponseField name="id" type="string">
+      The run ID — pass it back as `run_id` for the step-by-step detail, or to [Retry automation run](/api-reference/automations/retry-automation-run) for a failed run
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      `SUCCEEDED`, `FAILED`, `PAUSED` (parked at a Delay step waiting for its target time — not a failure) or `RUNNING`
+    </ResponseField>
+
+    <ResponseField name="start_time" type="string">
+      When the run started
+    </ResponseField>
+
+    <ResponseField name="duration_ms" type="integer">
+      The run's duration in milliseconds
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response — detail (with `run_id`)
+
+<ResponseField name="run" type="object">
+  The execution's detail
+
+  <Expandable title="run properties">
+    <ResponseField name="id" type="string">
+      The run ID
+    </ResponseField>
+
+    <ResponseField name="status" type="string">
+      `SUCCEEDED`, `FAILED`, `PAUSED` or `RUNNING`
+    </ResponseField>
+
+    <ResponseField name="start_time" type="string">
+      When the run started
+    </ResponseField>
+
+    <ResponseField name="duration_ms" type="integer">
+      The run's duration in milliseconds
+    </ResponseField>
+
+    <ResponseField name="steps" type="array">
+      Per-step outcome — same shape as the `test.steps` of [Create automation](/api-reference/automations/create-automation): `{name, status, classification, error}`, where `classification` is `ok`, `paused_at_delay`, `wiring_error`, `missing_connection` or `missing_record`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+A missing automation — or one that does not belong to your account — returns a `404` with `{"message": "Automation not found"}`. A `run_id` that does not belong to this automation returns a `404` with `{"message": "Run not found for this automation"}`.
+
+<ResponseExample>
+
+```json 200 Response (list)
+{
+  "runs": [
+    {
+      "id": "yHhXbqWj3zJZ5ztDNfUry",
+      "status": "SUCCEEDED",
+      "start_time": "2026-07-24T18:23:59.634Z",
+      "duration_ms": 1
+    },
+    {
+      "id": "x2PqLm90AbCdEfGhIjKlM",
+      "status": "FAILED",
+      "start_time": "2026-07-24T17:10:12.000Z",
+      "duration_ms": 410
+    }
+  ]
+}
+```
+
+```json 200 Response (detail)
+{
+  "run": {
+    "id": "x2PqLm90AbCdEfGhIjKlM",
+    "status": "FAILED",
+    "start_time": "2026-07-24T17:10:12.000Z",
+    "duration_ms": 410,
+    "steps": [
+      { "name": "trigger", "status": "SUCCEEDED", "classification": "ok", "error": null },
+      {
+        "name": "step_1",
+        "status": "FAILED",
+        "classification": "missing_connection",
+        "error": "Request failed with status code 401"
+      }
+    ]
+  }
+}
+```
+
+```json 404 Response
+{
+  "message": "Run not found for this automation"
+}
+```
+
+</ResponseExample>

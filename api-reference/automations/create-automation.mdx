@@ -1,0 +1,182 @@
+---
+title: "Create automation"
+api: "POST /user/automate/flows"
+description: "Create an automation from a definition, activate it and prove it with a real test run"
+---
+
+This endpoint creates an automation from its definition (a trigger and its chained steps), activates it, executes a **real test run** with your sample payload, and reports the result step by step. The test run is the gate: an automation whose test fails is left disabled, and an assistant-event automation is only attached to the assistant after its test passes.
+
+When a ready-made [template](/api-reference/automations/list-automation-templates) matches what you need, [applying it](/api-reference/automations/apply-automation-template) is simpler than writing a definition from scratch.
+
+<Warning>
+The test run **executes the automation for real**. Definitions containing steps that send messages or emails, or start calls, are refused unless you explicitly pass `confirm_side_effects: true` — and when you do, those steps really send during the test. Point them at recipients you own.
+</Warning>
+
+### The definition format
+
+The `flow` object is the automation's definition. The preferred shape is a flat list:
+
+```json
+{
+  "trigger": { ... },
+  "steps": [ step1, step2, ... ]
+}
+```
+
+The steps are chained onto the trigger in the order given. The only nesting you write yourself is inside a step that needs it — a `BRANCH` step's conditional steps go under its `onSuccessAction` / `onFailureAction`. (A hand-nested tree, where each step sits under the previous one's `nextAction`, is also accepted.)
+
+A definition **always replaces the whole automation** — it is never merged. A trigger with no steps is rejected (`no_steps`): an automation that does nothing cannot be activated.
+
+**Supported triggers** (`trigger.settings`):
+
+| Trigger | `pieceName` / `triggerName` | Behavior |
+|---|---|---|
+| Webhook | `@activepieces/piece-webhook` / `catch_webhook` | You get a `webhook_url` to call from external systems. The payload arrives wrapped: reference fields as `{{trigger['body']['field']}}`. Tested synchronously with your `sample`. |
+| Phone call ended | `@integration-tools/piece-voice` / `phoneCallEnded` | Requires `assistant_id`. Attached to the assistant after a green test. Payload fields live directly on the trigger: `{{trigger['extracted_variables']['x']}}`, `{{trigger['customer_phone']}}`, … |
+| Inbound call | `@integration-tools/piece-voice` / `inboundCall` | Requires `assistant_id`. Runs before the assistant answers; must end in a respond step returning a flat map of strings. |
+| New conversation | `@integration-tools/piece-voice` / `newConversation` | Requires `assistant_id`. |
+| Conversation ended | webhook trigger + `bind_webhook: "conversation_ended"` | Requires `assistant_id`. Fires when a chat ends; payload arrives wrapped, so reference fields through `{{trigger['body']['...']}}`. |
+| Schedule | `@activepieces/piece-schedule` / `every_x_minutes`, `every_day`, … | Cannot be fired on demand — activates armed as `active_untested`; the first scheduled run is the proof (check [runs](/api-reference/automations/list-automation-runs)). |
+| External integrations | the integration's own trigger (new spreadsheet row, new CRM contact, new lead, …) | Your connected account is attached automatically; if it is missing or expired you get a `needs_connection` / `needs_reconnection` error with the exact steps to fix it in the app. Activates as `active_untested`. |
+
+Steps reference earlier output by step name — `{{step_1['body']['field']}}` for HTTP steps (their JSON nests under `body`). Common step shapes: HTTP requests, code transforms, branches, delays, respond steps, and platform actions (send SMS/WhatsApp, start a call, re-queue a lead). The easiest way to learn a step's exact shape is to read an existing automation with [Get automation](/api-reference/automations/get-automation) or apply a template and inspect what it built.
+
+### Request body
+
+<ParamField body="name" type="string" required>
+  A short human name for the automation (max 255 characters)
+</ParamField>
+
+<ParamField body="flow" type="object" required>
+  The automation definition — `{"trigger": {...}, "steps": [...]}` as described above. Max 1 MB.
+</ParamField>
+
+<ParamField body="sample" type="object" optional>
+  A realistically-shaped sample payload for the test run (what the trigger will receive). For assistant events, a canonical sample built from the assistant's own variables is used when omitted. Max 256 KB.
+</ParamField>
+
+<ParamField body="assistant_id" type="integer" optional>
+  Required for assistant-event automations (`phoneCallEnded`, `inboundCall`, `newConversation`, and `bind_webhook`): the assistant this automation attaches to. It starts receiving that assistant's real events after the test passes. (For the platform triggers, selecting the assistant inside the trigger's `settings.input.assistant` also works — the explicit parameter wins.)
+</ParamField>
+
+<ParamField body="bind_webhook" type="string" optional>
+  For a webhook-triggered definition only: attach it to the assistant's conversation-ended event. The only supported value is `conversation_ended`. Requires `assistant_id`.
+</ParamField>
+
+<ParamField body="confirm_side_effects" type="boolean" optional>
+  Required (`true`) when the definition contains steps that send messages or emails, start calls, or make non-GET HTTP requests — the test run executes them for real.
+</ParamField>
+
+### Response
+
+Returns `201` when the automation is active (`active` / `active_untested`), `200` when it was built but its test run failed (`test_failed`), and `422` for a definition that never reached the test run (see error codes below).
+
+<ResponseField name="automation_id" type="string">
+  The ID of the created automation
+</ResponseField>
+
+<ResponseField name="webhook_url" type="string | null">
+  For webhook-triggered automations (including conversation-ended ones): the URL external systems call to fire it. `null` for assistant-event and schedule automations.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  - `active` — the test run passed; the automation is live (and attached, for assistant events).
+  - `active_untested` — the trigger cannot be fired on demand (schedules, external integrations); the automation is live and armed, and the first real event is the proof.
+  - `test_failed` — the test run failed; the automation was left disabled. Read `test.steps` for the per-step classification.
+</ResponseField>
+
+<ResponseField name="test" type="object">
+  The test run result
+
+  <Expandable title="test properties">
+    <ResponseField name="run_status" type="string">
+      `SUCCEEDED`, `PAUSED`, `FAILED`, or `not_tested` (untestable triggers); rarely `no_run` when the test produced no execution record. **`PAUSED` counts as success**: the run is parked at a Delay step waiting for its target time — every step before the delay already ran.
+    </ResponseField>
+
+    <ResponseField name="steps" type="array">
+      Per-step outcome of the test run
+
+      <Expandable title="step properties">
+        <ResponseField name="name" type="string">
+          The step name (`trigger`, `step_1`, …)
+        </ResponseField>
+
+        <ResponseField name="status" type="string">
+          `SUCCEEDED`, `FAILED` or `PAUSED`
+        </ResponseField>
+
+        <ResponseField name="classification" type="string">
+          `ok`, `paused_at_delay`, or — for failures — `wiring_error` (the definition is wrong: fix it and repair via [Update automation](/api-reference/automations/update-automation)), `missing_connection` (an account must be connected in the app first), `missing_record` (the sample referenced data that does not exist — often fine).
+        </ResponseField>
+
+        <ResponseField name="error" type="string | null">
+          The step's error message, when it failed
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="response" type="object | string | null">
+  For synchronously-tested automations (webhook and inbound triggers): what the automation responded during the test run
+</ResponseField>
+
+<ResponseField name="binding" type="object | null">
+  For assistant-event automations: `{"type": "post_call" | "inbound" | "conversation" | "conversation_ended", "assistant_id": <id>, "bound": <bool>}`. `bound` is `true` only after a green test.
+</ResponseField>
+
+### Error codes (`422`)
+
+Hard failures return `{"message": "...", "error": "<code>"}` and nothing is activated. Notable codes:
+
+| `error` | Meaning |
+|---|---|
+| `side_effects_require_confirmation` | The definition contains steps that would really send during the test — retry with `confirm_side_effects: true` after checking the recipients. |
+| `no_steps` | The trigger has no steps chained to it. |
+| `invalid_definition` / `unsupported_trigger` | The definition is missing its trigger, or uses a trigger type that is not supported. |
+| `assistant_required` / `assistant_not_found` | The trigger needs an `assistant_id`, or the assistant does not belong to your account. |
+| `binding_conflict` | The assistant already has an automation (or a custom webhook) for this event — an assistant has one slot per event type. Update the existing automation instead, or delete it first. |
+| `needs_connection` / `needs_reconnection` | The trigger's integration account must be connected (or reconnected) in the app first — the message contains the exact steps. |
+| `import_failed` / `publish_failed` / `create_failed` | The definition was rejected or could not be activated. |
+
+<ResponseExample>
+
+```json 201 Response (webhook, test passed)
+{
+  "automation_id": "f4EaLhOW2zoEsXXSOJP2r",
+  "webhook_url": "https://ai.earsconnect.com/automate/api/v1/webhooks/f4EaLhOW2zoEsXXSOJP2r",
+  "status": "active",
+  "test": {
+    "run_status": "SUCCEEDED",
+    "steps": [
+      { "name": "trigger", "status": "SUCCEEDED", "classification": "ok", "error": null },
+      { "name": "step_1", "status": "SUCCEEDED", "classification": "ok", "error": null }
+    ]
+  },
+  "response": { "ok": "true", "echo": "hello" },
+  "binding": null
+}
+```
+
+```json 201 Response (schedule, activates untested)
+{
+  "automation_id": "aB3xYz01MnOpQrStUvWxY",
+  "webhook_url": null,
+  "status": "active_untested",
+  "test": {
+    "run_status": "not_tested",
+    "steps": []
+  },
+  "response": null,
+  "binding": null
+}
+```
+
+```json 422 Response (side effects not confirmed)
+{
+  "message": "This automation contains steps that would REALLY send messages, emails or start calls during the test run: Send SMS. Confirm with the user first — point those steps at a safe recipient the user owns — then retry with confirm_side_effects set to true.",
+  "error": "side_effects_require_confirmation"
+}
+```
+
+</ResponseExample>

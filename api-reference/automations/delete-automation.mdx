@@ -1,0 +1,37 @@
+---
+title: "Delete automation"
+api: "DELETE /user/automate/flows/{id}"
+description: "Permanently delete an automation"
+---
+
+This endpoint permanently deletes an automation. This cannot be undone — everything the automation did stops, and its definition is unrecoverable. If any of your assistants were attached to it, that attachment is cleared automatically so nothing keeps firing a deleted automation. If you are deleting an automation to replace it and still want any of its current behavior, read it first with [Get automation](/api-reference/automations/get-automation) and carry those steps into the replacement.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  The ID of the automation (from [List automations](/api-reference/automations/list-automations))
+</ParamField>
+
+### Response
+
+<ResponseField name="message" type="string">
+  `Automation deleted successfully`
+</ResponseField>
+
+A missing automation — or one that does not belong to your account — returns a `404` with `{"message": "Automation not found"}`.
+
+<ResponseExample>
+
+```json 200 Response
+{
+  "message": "Automation deleted successfully"
+}
+```
+
+```json 404 Response
+{
+  "message": "Automation not found"
+}
+```
+
+</ResponseExample>

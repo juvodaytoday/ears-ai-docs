@@ -1,6 +1,6 @@
 ---
 title: "Disable AI"
-api: "POST /automate/conversations/{uuid}/disable-ai"
+api: "POST /user/conversations/{uuid}/disable-ai"
 description: "Disable AI replies for a specific conversation, allowing a human agent to take over"
 ---
 
@@ -10,7 +10,7 @@ This is useful for **human takeover** flows: configure a mid-call tool or automa
 
 ### Authentication
 
-This endpoint requires your **Automate API key** as a Bearer token.
+This endpoint requires your **API key** as a Bearer token.
 
 ### Path Parameters
 
@@ -42,7 +42,7 @@ This endpoint requires your **Automate API key** as a Bearer token.
 <RequestExample>
 
 ```bash cURL
-curl -X POST "https://ai.earsconnect.com/api/automate/conversations/7c9e6679-7425-40de-944b-e07fc1f90ae7/disable-ai" \
+curl -X POST "https://ai.earsconnect.com/api/user/conversations/7c9e6679-7425-40de-944b-e07fc1f90ae7/disable-ai" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -50,7 +50,7 @@ curl -X POST "https://ai.earsconnect.com/api/automate/conversations/7c9e6679-742
 const conversationId = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
 const response = await fetch(
-  `https://ai.earsconnect.com/api/automate/conversations/${conversationId}/disable-ai`,
+  `https://ai.earsconnect.com/api/user/conversations/${conversationId}/disable-ai`,
   {
     method: 'POST',
     headers: {
@@ -69,7 +69,7 @@ import requests
 conversation_id = '7c9e6679-7425-40de-944b-e07fc1f90ae7'
 
 response = requests.post(
-    f'https://ai.earsconnect.com/api/automate/conversations/{conversation_id}/disable-ai',
+    f'https://ai.earsconnect.com/api/user/conversations/{conversation_id}/disable-ai',
     headers={'Authorization': 'Bearer YOUR_API_KEY'}
 )
 
@@ -108,7 +108,7 @@ print(data['ai_enabled'])  # False
 A common pattern is to configure a mid-call tool that triggers this endpoint when the customer asks to speak with a human:
 
 1. Create a mid-call tool (e.g. `transfer_to_human`) with a webhook pointing to your ActivePieces or automation flow
-2. In your automation flow, call `POST /automate/conversations/{uuid}/disable-ai` using your API key
+2. In your automation flow, call `POST /user/conversations/{uuid}/disable-ai` using your API key
 3. Notify your support team (e.g. via Slack, email, or CRM) with the conversation UUID
 4. The AI stops responding — your agent takes over by sending messages directly
 
