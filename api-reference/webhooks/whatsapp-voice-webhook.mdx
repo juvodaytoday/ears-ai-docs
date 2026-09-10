@@ -1,0 +1,124 @@
+---
+title: "WhatsApp Voice Webhook"
+icon: "webhook"
+description: "Events when a customer is asked to allow WhatsApp calls, answers that request, or a WhatsApp call starts"
+---
+
+We POST compact WhatsApp calling events when a contact is asked to allow calls, answers that request, or a WhatsApp call starts.
+
+This is how you listen for "they allowed the call" without polling.
+
+<Info>
+**Automations** — use the **WhatsApp voice event** trigger. That binds a dedicated webhook and will not overwrite your New conversation flow.
+
+**Custom backends** — events are also POSTed to the assistant's conversation webhook URL (the same URL used for new-conversation notifications). Filter incoming POSTs on `"event": "whatsapp_voice"`.
+</Info>
+
+Completed WhatsApp calls still use the [post-call webhook](/api-reference/webhooks/post-call-webhook). Inbound WhatsApp calls that your assistant answers also follow the assistant's inbound webhook, if you have one.
+
+## Event types
+
+| `type` | When it fires |
+|--------|----------------|
+| `call_permission_requested` | You sent Ask to call |
+| `call_permission_granted` | Customer tapped Allow |
+| `call_permission_denied` | Customer tapped Decline |
+| `voice_call` | A WhatsApp call was placed or received (includes `call_id`) |
+
+## Payload
+
+Every voice event is a small JSON object. It does **not** include provider IDs, trunks, recordings, transcripts, or costs.
+
+<ResponseField name="event" type="string">
+  Always `whatsapp_voice`
+</ResponseField>
+
+<ResponseField name="type" type="string">
+  One of the event types above
+</ResponseField>
+
+<ResponseField name="sender_id" type="integer">
+  WhatsApp sender that owns the chat
+</ResponseField>
+
+<ResponseField name="customer_phone" type="string">
+  Customer number in E.164
+</ResponseField>
+
+<ResponseField name="conversation_id" type="string">
+  Conversation UUID, or `null`
+</ResponseField>
+
+<ResponseField name="assistant_id" type="string">
+  Assistant UUID
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current permission status: `pending`, `granted`, `rejected`, `revoked`, `expired`, or `null`
+</ResponseField>
+
+<ResponseField name="expires_at" type="string">
+  When granted consent ends, or `null`
+</ResponseField>
+
+<ResponseField name="can_call" type="boolean">
+  Whether you may place a WhatsApp call right now
+</ResponseField>
+
+<ResponseField name="call_id" type="integer">
+  Present only on `voice_call`. Dashboard call id.
+</ResponseField>
+
+<ResponseField name="direction" type="string">
+  Present only on `voice_call`: `whatsapp_outbound` or `whatsapp_inbound`
+</ResponseField>
+
+<ResponseExample>
+
+```json Permission granted
+{
+  "event": "whatsapp_voice",
+  "type": "call_permission_granted",
+  "sender_id": 12,
+  "customer_phone": "+40711222333",
+  "conversation_id": "9c2e1d4a-6b8f-4c11-9a0e-1f2d3c4b5a67",
+  "assistant_id": "b7e2c1aa-11d0-4f3a-9c44-0d8e7f6a5b21",
+  "status": "granted",
+  "expires_at": "2026-08-22T10:15:00+00:00",
+  "can_call": true
+}
+```
+
+```json Outbound call started
+{
+  "event": "whatsapp_voice",
+  "type": "voice_call",
+  "sender_id": 12,
+  "customer_phone": "+40711222333",
+  "conversation_id": "9c2e1d4a-6b8f-4c11-9a0e-1f2d3c4b5a67",
+  "assistant_id": "b7e2c1aa-11d0-4f3a-9c44-0d8e7f6a5b21",
+  "status": "granted",
+  "expires_at": "2026-08-22T10:15:00+00:00",
+  "can_call": true,
+  "call_id": 18402,
+  "direction": "whatsapp_outbound"
+}
+```
+
+</ResponseExample>
+
+## Typical automation
+
+1. Customer replies to your template (24-hour window opens)
+2. You [request permission](/api-reference/whatsapp/request-call-permission)
+3. Your server receives `call_permission_granted`
+4. You [place the call](/api-reference/whatsapp/place-whatsapp-call)
+5. You receive `voice_call`, then later the [post-call webhook](/api-reference/webhooks/post-call-webhook)
+
+If you never receive `call_permission_granted`, the customer declined, ignored the card, or the ask never delivered. Check [Get call permission](/api-reference/whatsapp/get-call-permission) and [WhatsApp Calling](/whatsapp/calling).
+
+## Delivery
+
+- POST JSON, 10 second timeout, up to 3 retries
+- Respond with HTTP 2xx so we do not retry
+- Ignore events whose `event` is not `whatsapp_voice` if you also use this URL for new conversations

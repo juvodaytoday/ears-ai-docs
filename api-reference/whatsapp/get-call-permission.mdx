@@ -1,0 +1,146 @@
+---
+title: "Get call permission"
+api: "GET /user/whatsapp/voice/permission"
+description: "Check whether a contact can be asked to call, or already allowed WhatsApp calls"
+---
+
+Returns the current WhatsApp calling permission for one sender and one customer phone number. Use this before you [ask](/api-reference/whatsapp/request-call-permission) or [place a call](/api-reference/whatsapp/place-whatsapp-call).
+
+<Note>
+  Rate-limited to **20 requests per minute** per user.
+</Note>
+
+### Query Parameters
+
+<ParamField query="sender_id" type="integer" required>
+  WhatsApp sender ID from [Get Senders](/api-reference/whatsapp/get-senders)
+</ParamField>
+
+<ParamField query="recipient_phone" type="string" required>
+  Customer phone number in E.164 format (e.g. `+40711222333`)
+</ParamField>
+
+### Response Fields
+
+<ResponseField name="success" type="boolean">
+  Request succeeded
+</ResponseField>
+
+<ResponseField name="sender_id" type="integer">
+  The sender you queried
+</ResponseField>
+
+<ResponseField name="customer_phone" type="string">
+  Normalized E.164 phone number
+</ResponseField>
+
+<ResponseField name="conversation_id" type="string">
+  Conversation UUID if a chat already exists, otherwise `null`
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  `pending`, `granted`, `rejected`, `revoked`, `expired`, or `null` if never asked
+</ResponseField>
+
+<ResponseField name="can_call" type="boolean">
+  `true` only when consent is granted and still valid
+</ResponseField>
+
+<ResponseField name="can_request" type="boolean">
+  `true` when the 24-hour chat window is open and WhatsApp still allows another ask
+</ResponseField>
+
+<ResponseField name="session_open" type="boolean">
+  `true` when the customer messaged this sender in the last 24 hours
+</ResponseField>
+
+<ResponseField name="expires_at" type="string">
+  When granted consent ends (ISO 8601), or `null`
+</ResponseField>
+
+<ResponseField name="requested_at" type="string">
+  When the last ask was sent (ISO 8601), or `null`
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET "https://ai.earsconnect.com/api/user/whatsapp/voice/permission?sender_id=12&recipient_phone=%2B40711222333" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```javascript JavaScript
+const params = new URLSearchParams({
+  sender_id: '12',
+  recipient_phone: '+40711222333',
+});
+
+const response = await fetch(
+  `https://ai.earsconnect.com/api/user/whatsapp/voice/permission?${params}`,
+  { headers: { Authorization: 'Bearer YOUR_API_KEY' } }
+);
+
+console.log(await response.json());
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://ai.earsconnect.com/api/user/whatsapp/voice/permission',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    params={'sender_id': 12, 'recipient_phone': '+40711222333'},
+)
+
+print(response.json())
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Ready to ask
+{
+  "success": true,
+  "sender_id": 12,
+  "customer_phone": "+40711222333",
+  "conversation_id": "9c2e1d4a-6b8f-4c11-9a0e-1f2d3c4b5a67",
+  "status": null,
+  "can_call": false,
+  "can_request": true,
+  "session_open": true,
+  "expires_at": null,
+  "requested_at": null
+}
+```
+
+```json 200 Consent granted
+{
+  "success": true,
+  "sender_id": 12,
+  "customer_phone": "+40711222333",
+  "conversation_id": "9c2e1d4a-6b8f-4c11-9a0e-1f2d3c4b5a67",
+  "status": "granted",
+  "can_call": true,
+  "can_request": false,
+  "session_open": true,
+  "expires_at": "2026-08-22T10:15:00+00:00",
+  "requested_at": "2026-08-15T10:15:00+00:00"
+}
+```
+
+```json 404 Sender not found
+{
+  "success": false,
+  "error": "Sender not found or does not belong to you",
+  "error_code": "SENDER_NOT_FOUND"
+}
+```
+
+</ResponseExample>
+
+### Notes
+
+- Only senders that belong to your account are visible. A missing or foreign `sender_id` returns `SENDER_NOT_FOUND`.
+- `can_request` is `false` when the chat window is closed — send a [regular template](/api-reference/whatsapp/send-template) and wait for a reply first. See [WhatsApp Calling](/whatsapp/calling).
+- `can_request` and `can_call` are also `false` when the sender's country does not allow business-initiated WhatsApp calls (United States, Canada, Egypt, Vietnam, Nigeria, Türkiye). Inbound calls still work.

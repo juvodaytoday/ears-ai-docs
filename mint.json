@@ -143,6 +143,7 @@
       "pages": [
         "whatsapp/overview",
         "whatsapp/senders",
+        "whatsapp/calling",
         "whatsapp/templates",
         "whatsapp/conversations",
         "whatsapp/automation"
@@ -410,7 +411,10 @@
         "api-reference/whatsapp/get-templates",
         "api-reference/whatsapp/send-template",
         "api-reference/whatsapp/send-freeform",
-        "api-reference/whatsapp/session-status"
+        "api-reference/whatsapp/session-status",
+        "api-reference/whatsapp/get-call-permission",
+        "api-reference/whatsapp/request-call-permission",
+        "api-reference/whatsapp/place-whatsapp-call"
       ]
     },
     {
@@ -418,7 +422,8 @@
       "pages": [
         "api-reference/webhooks/post-call-webhook",
         "api-reference/webhooks/conversation-ended-webhook",
-        "api-reference/webhooks/read-receipts-webhook"
+        "api-reference/webhooks/read-receipts-webhook",
+        "api-reference/webhooks/whatsapp-voice-webhook"
       ]
     },
     {

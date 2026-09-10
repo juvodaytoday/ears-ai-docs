@@ -1,0 +1,147 @@
+---
+title: "Place a WhatsApp call"
+api: "POST /user/whatsapp/voice/call"
+description: "Place an outbound WhatsApp voice call after the customer has granted permission"
+---
+
+Queues an outbound WhatsApp voice call. Your sender's assistant joins the call when the customer answers.
+
+The customer **must** have granted call permission and that consent must still be valid. This endpoint will not call a number that never allowed calling.
+
+<Note>
+  Rate-limited to **5 requests per minute**, **15 per hour**, and **30 per day** per user. Also limited to **3 attempts per contact every 5 minutes** and **5 WhatsApp calls in progress** on the same sender.
+</Note>
+
+### Request Body
+
+<ParamField body="sender_id" type="integer" required>
+  WhatsApp sender ID with calling enabled
+</ParamField>
+
+<ParamField body="recipient_phone" type="string" required>
+  Customer phone number in E.164 format
+</ParamField>
+
+<ParamField body="variables" type="object">
+  Optional variables passed to the assistant (max 20 keys, string values up to 500 characters). Use the same names you configured on the assistant.
+</ParamField>
+
+### Response Fields
+
+<ResponseField name="success" type="boolean">
+  The call was queued
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Always `queued` on success. The call is placed asynchronously.
+</ResponseField>
+
+<ResponseField name="sender_id" type="integer">
+  Sender used for the call
+</ResponseField>
+
+<ResponseField name="customer_phone" type="string">
+  Normalized E.164 phone number
+</ResponseField>
+
+### Error codes
+
+| HTTP | `error_code` | Meaning |
+|------|----------------|---------|
+| 402 | `INSUFFICIENT_BALANCE` | Account balance is too low |
+| 403 | `ASSISTANT_BLOCKED` | Assistant is unavailable for compliance review |
+| 404 | `SENDER_NOT_FOUND` | Sender missing or not yours |
+| 422 | `INVALID_PHONE` | Phone is not valid E.164 |
+| 422 | `VOICE_DISABLED` | Calling is not enabled |
+| 422 | `NO_PERMISSION` | Customer has not granted (or consent expired) |
+| 422 | `NO_ASSISTANT` | Sender has no assistant |
+| 422 | `SENDER_OFFLINE` | Sender is not online |
+| 422 | `REGION_NOT_SUPPORTED` | WhatsApp does not allow business-initiated calls from this sender's country |
+| 422 | `FEATURE_DISABLED` | Calling is not available on this workspace |
+| 429 | `CONCURRENT_LIMIT` | Too many WhatsApp calls already ringing on this sender |
+| 429 | `CONTACT_RATE_LIMIT` | Too many attempts to this contact in the last 5 minutes |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://ai.earsconnect.com/api/user/whatsapp/voice/call" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sender_id": 12,
+    "recipient_phone": "+40711222333",
+    "variables": {
+      "customer_name": "Ana Pop"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://ai.earsconnect.com/api/user/whatsapp/voice/call',
+  {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender_id: 12,
+      recipient_phone: '+40711222333',
+      variables: { customer_name: 'Ana Pop' },
+    }),
+  }
+);
+
+console.log(await response.json());
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://ai.earsconnect.com/api/user/whatsapp/voice/call',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'sender_id': 12,
+        'recipient_phone': '+40711222333',
+        'variables': {'customer_name': 'Ana Pop'},
+    },
+)
+
+print(response.json())
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Queued
+{
+  "success": true,
+  "status": "queued",
+  "sender_id": 12,
+  "customer_phone": "+40711222333"
+}
+```
+
+```json 422 No permission
+{
+  "success": false,
+  "error": "This contact has not granted permission to receive WhatsApp calls. Send a call permission request first.",
+  "error_code": "NO_PERMISSION"
+}
+```
+
+</ResponseExample>
+
+### After you queue the call
+
+- A `call_started` event is sent to the [WhatsApp voice webhook](/api-reference/webhooks/whatsapp-voice-webhook) when the call is placed
+- When the call finishes, the assistant's [post-call webhook](/api-reference/webhooks/post-call-webhook) fires as usual (transcript, duration, extracted variables)
+- The response does **not** include provider call IDs
+
+Read [WhatsApp Calling](/whatsapp/calling) before you automate this. Cold-calling new numbers is not possible.
