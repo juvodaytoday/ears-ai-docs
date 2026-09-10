@@ -304,6 +304,24 @@ description: "Common issues and solutions for WhatsApp Business integration"
    - Go back to step 2 and select your number again
    - Complete the Meta signup flow carefully
 
+## WhatsApp Calling
+
+### I cannot call a new number
+
+WhatsApp does not allow businesses to ask or call a number that has never written to them. Send a regular template, wait for their reply, then **Ask to call**. Full explanation: [WhatsApp Calling](/whatsapp/calling).
+
+### Ask to call never arrives
+
+The 24-hour chat window is closed, or you already used the 1-ask-per-day limit. Check [session status](/api-reference/whatsapp/session-status) and [call permission](/api-reference/whatsapp/get-call-permission).
+
+### Enable Calling is unavailable
+
+The sender must be online, have an assistant, have a messaging limit of at least 2,000 / 24hr, and must not be Coexistence (WhatsApp Business app).
+
+### Customer allowed but I still cannot call
+
+Consent lasts 7 days. Confirm calling is still enabled, the assistant is assigned, and your balance is not empty. WhatsApp can also revoke consent after several unanswered business calls.
+
 ## Getting Help
 
 If you're still experiencing issues:

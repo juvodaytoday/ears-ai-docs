@@ -6,6 +6,17 @@ description: "Automate WhatsApp messaging with triggers and actions in the autom
 
 The automation platform integrates with WhatsApp to let you send messages automatically, trigger flows from WhatsApp events, and generate AI responses programmatically.
 
+## WhatsApp Calling
+
+Ask for call permission and place WhatsApp calls from automations, or from your own backend via the REST API. The same WhatsApp limits apply.
+
+- Trigger: **WhatsApp voice event** (permission requested / granted / declined, or a WhatsApp call started)
+- Actions: **Request WhatsApp call permission**, **Place WhatsApp call**
+- REST: [Request call permission](/api-reference/whatsapp/request-call-permission), [Place a WhatsApp call](/api-reference/whatsapp/place-whatsapp-call)
+- Custom backends: [Voice events webhook](/api-reference/webhooks/whatsapp-voice-webhook)
+
+Do not start with a Voice Call Request to a brand-new number. Open the chat with a regular template first. Details: [WhatsApp Calling](/whatsapp/calling).
+
 ## Available Actions
 
 ### Send WhatsApp Template Message
@@ -64,6 +75,38 @@ Send a free-form text message to a customer within the 24-hour messaging window.
 **Sending files** — Set **Media URL** to a publicly reachable link to the file (a document, image, audio, or video from your storage, CRM, or catalog). WhatsApp fetches it at send time, and earlier steps in your flow can build this URL dynamically (e.g. look up the invoice for an order). The file is delivered to the customer inside the same conversation.
 </Tip>
 
+### Request WhatsApp Call Permission
+
+Send **Ask to call** so the customer can allow WhatsApp voice calls.
+
+<Warning>
+The customer must have messaged this sender in the last 24 hours. WhatsApp typically allows one ask per contact every 24 hours and two per week — that counter resets after a connected call.
+</Warning>
+
+**Configuration:**
+
+| Field | Description |
+|-------|-------------|
+| **Sender** | WhatsApp sender with calling enabled |
+| **Recipient Phone** | Customer phone number (E.164) |
+| **Recipient Name** | Optional display name |
+
+### Place WhatsApp Call
+
+Place an outbound WhatsApp voice call after the customer has granted permission. The sender's assistant joins when they answer.
+
+**Configuration:**
+
+| Field | Description |
+|-------|-------------|
+| **Sender** | WhatsApp sender with calling enabled |
+| **Recipient Phone** | Customer phone number (E.164) |
+| **Variables** | Optional variables passed to the assistant |
+
+<Tip>
+Listen for **Call permission granted** on the WhatsApp voice event trigger, then place the call. Completed calls still fire the regular [post-call webhook](/api-reference/webhooks/post-call-webhook) / Phone call ended trigger.
+</Tip>
+
 ### Generate AI Reply
 
 Generate an AI response using your assistant, identified by an external customer identifier.
@@ -117,6 +160,29 @@ Trigger a flow when a new WhatsApp conversation begins.
 - First message content
 - Sender information
 - Conversation ID
+
+### WhatsApp Voice Event
+
+Trigger a flow when a contact is asked to allow WhatsApp calls, answers that request, or a WhatsApp call starts.
+
+**Available Data:**
+- Event type (`call_permission_requested`, `call_permission_granted`, `call_permission_denied`, `voice_call`)
+- Customer phone number
+- Sender ID
+- Conversation ID
+- Whether you may place a call (`can_call`)
+- Call ID and direction (only on `voice_call`)
+
+**Example Use Cases:**
+- Place a WhatsApp call as soon as the customer taps Allow
+- Notify your team when a permission request is declined
+- Log WhatsApp call starts to a CRM
+
+You can filter the trigger to one event type, or receive every voice event.
+
+<Tip>
+This trigger uses a dedicated webhook on the assistant. It does not replace the New conversation trigger. Custom backends can still listen on the [conversation webhook](/api-reference/webhooks/whatsapp-voice-webhook).
+</Tip>
 
 ### Conversation Ended
 

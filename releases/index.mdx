@@ -8,6 +8,111 @@ icon: "scroll"
 **Stay up to date** — Follow our latest product updates and improvements. We ship new features regularly to enhance your AI calling experience.
 </Note>
 
+<Update label="v1.10.0" description="Aug 16 2026">
+
+### 📞 WhatsApp Voice Calls
+
+<Frame>
+ <img
+ src="/resources/ZddlUYrtevYbkYveeHnhGszI4awNd85a3Ocbaeku.png"
+ alt="Image"
+ />
+</Frame>
+
+This is the big one. Your assistant can now take and place real voice calls **over WhatsApp**, on the same numbers you already use for messaging. Your customer taps the call button in the chat they already have with you, and the assistant picks up. No phone dialling, no roaming charges on their side, no separate app.
+
+- **Customers calling you**: anyone can call your WhatsApp number at any time and your assistant answers automatically, day or night.
+- **You calling customers**: WhatsApp asks for consent first. Send an **Ask to call** request inside the conversation, and once the customer taps *Allow*, you can call them for the next 7 days.
+- **One toggle per number**: open a WhatsApp sender, switch calling on, and the platform sets everything up for you. Before it turns on, you see exactly which assistant will be answering.
+- **Same call, same tools**: WhatsApp calls behave like any other call. Recording, transcript, post-call analysis, tools, and knowledge base all work the way they already do.
+- **Everything in one place**: WhatsApp calls show up in your calls list with their own icon, and the call also appears inside the chat thread, so the message history and the call history read as one conversation.
+- **It tells you when it can't**: if a contact isn't callable yet, or a number isn't eligible for calling, you get a plain-language reason instead of a silent failure.
+
+**Where to find it:** **Channels → WhatsApp**, open a sender, then **Enable calling**. There's a built-in **WhatsApp Calling** guide on the same page covering the rules below.
+
+### 🎙️ Import Voices Straight from the Voice Libraries
+You're no longer limited to the voices already on the list. You can now browse the full voice libraries of the built-in voice providers and import any voice you like into your account with one click. It then shows up in the voice picker for every assistant, like all the others.
+
+### 💬 Channels and Inbox
+
+- **Ignore message reactions**: a new per-number setting so a thumbs-up on your message doesn't wake the assistant up and trigger a reply.
+- **Web widget stays put**: the widget settings panel no longer closes on you every time you save.
+- **Group widgets by campaign**: custom dashboard widgets can now filter and group by campaign name.
+- **Instagram setup instructions**: connecting an Instagram account now comes with step-by-step instructions in the app, plus a fix for connection screens that failed to load on some accounts.
+- **Mobile menu fix**: opening plans or credits on a phone now closes the side menu behind it.
+
+### 🛠️ Improvements and Fixes
+
+- **Deleting a lot of records at once**: large deletions of calls, leads, campaigns, or conversations now run in the background instead of making you wait on a loading screen or timing out.
+- **Warm transfers, three fixes**: the assistant no longer introduces the caller twice, the briefing to the person receiving the call is no longer skipped, and recordings of transferred calls are now saved correctly.
+- **Bringing your own number**: importing a number no longer fails when a matching setup already exists at your carrier.
+
+</Update>
+
+<Update label="v1.9.1" description="Jul 27 2026">
+
+### 🤖 Connect AI Now Builds Your Automations
+
+<Frame>
+ <img
+ src="/resources/7XMF2wA1VQnb62dCyU0uEzeWZGpaYpbz1Bi6S2yk.webp"
+ alt="Image"
+ />
+</Frame>
+
+Connect AI already let you build and fix assistants by chatting with ChatGPT or Claude. It can now build your **automations** too: the workflows that run before, during and after a call.
+
+You describe what should happen in plain language. The AI picks the trigger, wires the steps, finds your sheets, campaigns and numbers by name, runs a real test, and switches the automation on only if it passes. No builder screens, no field names, no IDs to copy.
+
+### 💬 What That Looks Like
+Things you can now ask for, word for word:
+
+- *"After every call, if the caller was qualified, add a row to my Google Sheet with their name, phone and summary."*
+- *"If a customer asks to be called back later, call them back at the time they asked for."*
+- *"Give me a link my website form can post leads to, and call every new lead automatically."*
+- *"During a call, let the assistant look up an order number in my system and read the status back to the caller."*
+- *"Let callers cancel or reschedule their appointment while they're on the phone."*
+- *"Before the assistant offers a discount, text my supervisor and only continue once they approve."*
+
+Each one becomes a live, tested automation attached to the assistant you name.
+
+### 📚 17 Ready-Made Automations
+The AI checks a library of proven automations first, so common requests are set up in seconds instead of built from scratch:
+
+- **Save qualified leads to a spreadsheet**, or **log every call to your CRM**
+- **Call the customer back** at the exact time they asked for
+- **Hot lead alerts**, **SMS or WhatsApp follow-ups**, and **transcript emails** after a call
+- **Call new leads automatically** from a web form, ad platform or spreadsheet
+- **Confirm or remind before a booking**, and cancel or reschedule mid-call
+- **Recognise returning callers** and greet them by name
+- **Ask a human for approval** before the assistant does something sensitive
+
+Start from one of these, then change it by chatting.
+
+### 🔗 Connects to What You Already Use
+Spreadsheets, email, calendars, chat apps, CRMs and hundreds of other services are available as steps. Anything without a ready-made connector is still reachable with a plain web request, so your own internal tools work the same way.
+
+Accounts are connected once on the **Automate** page under Connections. After that the AI picks your sheet, your pipeline or your page **by name** from what's actually in your account.
+
+### 🛡️ It Tests Before It Goes Live
+An automation that looks right but quietly does nothing is worse than no automation. So nothing switches on until it has actually run.
+
+- **A real test run, not a preview**: the automation is executed end to end with a realistic sample of your own data. Only a green run gets attached to your assistant.
+- **You approve anything that really sends**: if the test would send a message, place a call or send an email for real, you're told first and asked to confirm, using your own number or address.
+- **Safe repairs**: if a change to a live automation fails its test, the previous working version is restored automatically so the automation keeps running. You can roll back any change yourself too.
+- **No silent overwrites**: an assistant that already has an automation for the same event won't get it quietly replaced.
+
+### 🔍 Fix What's Already Running
+Ask what went wrong and the AI reads the execution history for you: every run, what each step received and returned, and exactly which one failed and why. Once the cause is fixed, the run can resume from the broken step, so steps that already succeeded are never repeated and nothing gets sent twice. Repairs change only what needs changing and leave the rest of your setup intact.
+
+### 🛠️ Also Worth Knowing
+
+- **Available on your API too**: if you'd rather build from your own code than by chatting, the same create, test, update, roll back and run history operations are exposed as endpoints.
+
+**Where to find it:** open **Connect AI** from the top bar to link your account, then just ask. Everything the AI builds also appears on your **Automate** page, where you can open and edit it visually at any time.
+
+</Update>
+
 <Update label="v1.9.0" description="Jul 26 2026">
 
 ### 💬 Facebook & Instagram Messages, 📣 SMS + WhatsApp Campaigns, 🔐 Two-Factor Authentication

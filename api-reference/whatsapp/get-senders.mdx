@@ -43,6 +43,10 @@ This endpoint returns a list of WhatsApp Business senders (phone numbers) config
     <ResponseField name="messaging_limit_formatted" type="string">
       Human-readable messaging limit (e.g., `1,000 / 24hr`, `10,000 / 24hr`, or `Unlimited`)
     </ResponseField>
+
+    <ResponseField name="voice_calling_enabled" type="boolean">
+      `true` when WhatsApp Calling is enabled on this sender. See [WhatsApp Calling](/whatsapp/calling).
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -99,7 +103,8 @@ for sender in senders:
       "status": "online",
       "quality_rating": "GREEN",
       "messaging_limit": 10000,
-      "messaging_limit_formatted": "10,000 / 24hr"
+      "messaging_limit_formatted": "10,000 / 24hr",
+      "voice_calling_enabled": true
     },
     {
       "id": 15,
@@ -108,7 +113,8 @@ for sender in senders:
       "status": "online",
       "quality_rating": "GREEN",
       "messaging_limit": null,
-      "messaging_limit_formatted": "Unlimited"
+      "messaging_limit_formatted": "Unlimited",
+      "voice_calling_enabled": false
     }
   ]
 }

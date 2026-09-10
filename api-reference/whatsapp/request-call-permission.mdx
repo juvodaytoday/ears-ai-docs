@@ -1,0 +1,140 @@
+---
+title: "Request call permission"
+api: "POST /user/whatsapp/voice/request"
+description: "Send a WhatsApp Voice Call Request (Ask to call) to a customer"
+---
+
+Sends the sender's approved Voice Call Request template so the customer can Allow or Decline WhatsApp calls.
+
+This endpoint will **not** send the request if the 24-hour chat window is closed. That protects your WhatsApp quota: a request sent to a brand-new number is not delivered, but still counts as your one ask for the day.
+
+<Note>
+  Rate-limited to **5 requests per minute**, **20 per hour**, and **50 per day** per user. WhatsApp typically allows **1 ask per contact every 24 hours** and **2 per week**. Those WhatsApp counters reset after a connected call.
+</Note>
+
+### Request Body
+
+<ParamField body="sender_id" type="integer" required>
+  WhatsApp sender ID. Calling must already be enabled on this sender.
+</ParamField>
+
+<ParamField body="recipient_phone" type="string" required>
+  Customer phone number in E.164 format
+</ParamField>
+
+<ParamField body="recipient_name" type="string">
+  Optional display name for the conversation (max 255 characters)
+</ParamField>
+
+<ParamField body="template_id" type="integer">
+  Optional Voice Call Request template ID. If omitted, the sender's approved voice-call template is used.
+</ParamField>
+
+### Response Fields
+
+Same shape as [Get call permission](/api-reference/whatsapp/get-call-permission), plus `success`.
+
+### Error codes
+
+| HTTP | `error_code` | Meaning |
+|------|----------------|---------|
+| 404 | `SENDER_NOT_FOUND` | Sender missing or not yours |
+| 422 | `INVALID_PHONE` | Phone is not valid E.164 |
+| 422 | `VOICE_DISABLED` | Calling is not enabled on this sender |
+| 422 | `TEMPLATE_NOT_FOUND` | No approved Voice Call Request template |
+| 422 | `SESSION_CLOSED` | Customer has not messaged you in the last 24 hours |
+| 422 | `REQUEST_LIMIT` | Already asked in the last 24 hours (and no connected call reset the counter), weekly cap reached, or they already granted |
+| 422 | `REGION_NOT_SUPPORTED` | WhatsApp does not allow business-initiated calls from this sender's country (US, CA, EG, VN, NG, TR) |
+| 422 | `SEND_FAILED` | WhatsApp rejected the send |
+| 429 | — | API rate limit |
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "https://ai.earsconnect.com/api/user/whatsapp/voice/request" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sender_id": 12,
+    "recipient_phone": "+40711222333",
+    "recipient_name": "Ana Pop"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://ai.earsconnect.com/api/user/whatsapp/voice/request',
+  {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender_id: 12,
+      recipient_phone: '+40711222333',
+      recipient_name: 'Ana Pop',
+    }),
+  }
+);
+
+console.log(await response.json());
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://ai.earsconnect.com/api/user/whatsapp/voice/request',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'sender_id': 12,
+        'recipient_phone': '+40711222333',
+        'recipient_name': 'Ana Pop',
+    },
+)
+
+print(response.json())
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "success": true,
+  "sender_id": 12,
+  "customer_phone": "+40711222333",
+  "conversation_id": "9c2e1d4a-6b8f-4c11-9a0e-1f2d3c4b5a67",
+  "status": "pending",
+  "can_call": false,
+  "can_request": false,
+  "session_open": true,
+  "expires_at": null,
+  "requested_at": "2026-08-15T10:15:00+00:00"
+}
+```
+
+```json 422 Session closed
+{
+  "success": false,
+  "error": "This contact has not messaged you in the last 24 hours. Send a regular template first and wait for their reply, then ask to call.",
+  "error_code": "SESSION_CLOSED"
+}
+```
+
+</ResponseExample>
+
+### Recommended flow
+
+1. [Send a regular template](/api-reference/whatsapp/send-template) if there is no open chat
+2. Wait for the customer to reply (or poll [session status](/api-reference/whatsapp/session-status))
+3. Call this endpoint
+4. Listen for `call_permission_granted` on the [voice webhook](/api-reference/webhooks/whatsapp-voice-webhook)
+5. [Place the call](/api-reference/whatsapp/place-whatsapp-call)
+
+See [WhatsApp Calling](/whatsapp/calling) for the product rules behind these errors.
